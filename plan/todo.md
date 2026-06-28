@@ -1121,39 +1121,39 @@ Definition of done:
 
 ### 21.1 App foundation
 
-- [ ] Create web app.
-- [ ] Add API client.
-- [ ] Add auth token input for dev.
-- [ ] Add layout.
-- [ ] Add error boundary.
+- [x] Create web app.
+- [x] Add API client.
+- [x] Add auth token input for dev.
+- [x] Add layout.
+- [x] Add error boundary.
 
 ### 21.2 Package pages
 
-- [ ] Package list page.
-- [ ] Package detail page.
-- [ ] Version detail page.
-- [ ] Risk report panel.
-- [ ] Permissions panel.
-- [ ] Audit report panel.
-- [ ] Retraction history panel.
+- [x] Package list page.
+- [x] Package detail page.
+- [x] Version detail page.
+- [x] Risk report panel.
+- [x] Permissions panel.
+- [x] Audit report panel.
+- [x] Retraction history panel.
 
 ### 21.3 Stage review pages
 
-- [ ] Staged package list.
-- [ ] Stage detail page.
-- [ ] Download tarball link.
-- [ ] Risk findings list.
-- [ ] Diff summary.
-- [ ] Approve action.
-- [ ] Reject action.
-- [ ] Typed confirmation for risky approval.
+- [x] Staged package list.
+- [x] Stage detail page.
+- [x] Download tarball link.
+- [x] Risk findings list.
+- [x] Diff summary.
+- [x] Approve action.
+- [x] Reject action.
+- [x] Typed confirmation for risky approval.
 
 ### 21.4 Access management
 
-- [ ] Show package ACLs.
-- [ ] Add user share form.
-- [ ] Revoke share action.
-- [ ] Show short-lived token creation form.
+- [x] Show package ACLs.
+- [x] Add user share form.
+- [x] Revoke share action.
+- [x] Show short-lived token creation form.
 
 Definition of done:
 
