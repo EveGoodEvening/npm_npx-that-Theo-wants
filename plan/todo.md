@@ -675,35 +675,35 @@ Definition of done:
 
 ### 12.1 OSV integration
 
-- [ ] Implement OSV query client.
-- [ ] Cache OSV responses by package/version.
-- [ ] Add timeout and graceful degradation.
-- [ ] Normalize OSV severity where available.
+- [x] Implement OSV query client.
+- [x] Cache OSV responses by package/version.
+- [x] Add timeout and graceful degradation.
+- [x] Normalize OSV severity where available.
 - [ ] Add risk findings for known vulnerabilities.
 - [ ] Add policy option `blockKnownCriticalVulns`.
-- [ ] Add tests with mocked OSV responses.
+- [x] Add tests with mocked OSV responses.
 
 ### 12.2 Repository health integration
 
-- [ ] Extract repository URL from package metadata/provenance.
-- [ ] Normalize GitHub/GitLab URLs.
-- [ ] Implement OpenSSF Scorecard lookup or command adapter.
+- [x] Extract repository URL from package metadata/provenance.
+- [x] Normalize GitHub/GitLab URLs.
+- [x] Implement OpenSSF Scorecard lookup or command adapter.
 - [ ] Cache results by repo+commit/date.
-- [ ] Add score component for repo health.
-- [ ] Treat missing repo as lower confidence, not automatic block.
+- [x] Add score component for repo health.
+- [x] Treat missing repo as lower confidence, not automatic block.
 
 ### 12.3 Provenance integration
 
-- [ ] Parse npm provenance metadata when available.
-- [ ] Validate provenance subject digest matches tarball digest where possible.
-- [ ] Validate source repo matches package metadata where possible.
-- [ ] Add `provenanceStatus`:
-  - [ ] `verified`
-  - [ ] `missing`
-  - [ ] `mismatch`
-  - [ ] `unsupported`
+- [x] Parse npm provenance metadata when available.
+- [x] Validate provenance subject digest matches tarball digest where possible.
+- [x] Validate source repo matches package metadata where possible.
+- [x] Add `provenanceStatus`:
+  - [x] `verified`
+  - [x] `missing`
+  - [x] `mismatch`
+  - [x] `unsupported`
 - [ ] Add blocker for mismatch.
-- [ ] Add score bonus for verified provenance.
+- [x] Add score bonus for verified provenance.
 
 Definition of done:
 
