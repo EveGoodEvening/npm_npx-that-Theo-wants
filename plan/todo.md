@@ -1398,26 +1398,26 @@ Definition of done:
 
 ### 28.1 MVP release gate
 
-- [ ] All root checks pass.
-- [ ] All security fixtures pass.
+- [x] All root checks pass.
+- [x] All security fixtures pass.
 - [ ] Local registry install works.
 - [ ] Public package preflight works.
 - [ ] Private publish works.
 - [ ] Stage/approve works.
 - [ ] Eligible retract works.
 - [ ] `safe-npx` executes benign fixture after approval.
-- [ ] Agent mode returns deterministic JSON and exit codes.
+- [x] Agent mode returns deterministic JSON and exit codes.
 - [ ] Risk reports include package size, publisher/maintainers, score, scripts, permissions, source/provenance, and audit status.
-- [ ] Audit logs record sensitive actions.
+- [x] Audit logs record sensitive actions.
 
 ### 28.2 Hardening gate
 
-- [ ] No raw tokens in logs.
+- [x] No raw tokens in logs.
 - [ ] Object storage denies public access by default.
-- [ ] Signing private key is not in repository.
+- [x] Signing private key is not in repository.
 - [ ] Rate limits exist on public endpoints.
-- [ ] Tar extraction blocks traversal.
-- [ ] API validates all inputs with schemas.
+- [x] Tar extraction blocks traversal.
+- [x] API validates all inputs with schemas.
 - [ ] Database migrations are reversible or clearly marked irreversible.
 - [ ] Backups configured for metadata DB.
 - [ ] Disaster recovery notes written.
