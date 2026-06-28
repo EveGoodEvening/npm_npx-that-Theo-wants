@@ -78,6 +78,9 @@ importers:
       '@fastify/rate-limit':
         specifier: ^10.2.2
         version: 10.3.0
+      '@safe-npm/analyzer':
+        specifier: workspace:*
+        version: link:../../packages/analyzer
       '@safe-npm/core-types':
         specifier: workspace:*
         version: link:../../packages/core-types
@@ -87,6 +90,9 @@ importers:
       '@safe-npm/object-store':
         specifier: workspace:*
         version: link:../../packages/object-store
+      '@safe-npm/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
       fastify:
         specifier: ^5.2.1
         version: 5.8.5

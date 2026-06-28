@@ -13,6 +13,7 @@ import { randomUUID } from 'node:crypto';
 import { createDb, type DbClient } from '@safe-npm/db';
 import { createObjectStoreFromEnv, type ObjectStore } from '@safe-npm/object-store';
 import { registerAuth } from './auth.js';
+import { registerRegistryRoutes } from './routes.js';
 
 export interface AppOptions {
   logger?: boolean;
@@ -120,6 +121,11 @@ export async function createApp(options: AppOptions = {}): Promise<AppInstance> 
   // --- Auth ---
 
   await registerAuth(app, db);
+
+  // --- Registry routes (publish, packument, tarball) ---
+
+  const registryBaseUrl = process.env.SAFE_NPM_API_BASE_URL ?? `http://localhost:${process.env.SAFE_NPM_API_PORT ?? 3000}`;
+  await registerRegistryRoutes(app, { db, objectStore, registryBaseUrl });
 
   // Close db on shutdown.
   app.addHook('onClose', async () => {

@@ -4,22 +4,41 @@ import { createApp, type AppInstance } from '../src/app.js';
 import { generateToken, SCOPES, requireScopes } from '../src/auth.js';
 
 /**
- * API scaffold + auth tests (Section 7.3 + 7.4).
+ * API scaffold + auth + registry routes tests (Section 7.3-7.4 + 8.2-8.4).
  * Uses a mock db to avoid requiring a live PostgreSQL.
  */
 
 vi.mock('@safe-npm/db', () => {
   const users = new Map();
   const tokens = new Map();
+  const packages = new Map();
+  const versions = new Map();
+  const aliases = new Map();
+  const distTags = new Map();
+  const riskReports = new Map();
   let userSeq = 0;
   let tokenSeq = 0;
+  let pkgSeq = 0;
+  let verSeq = 0;
 
   return {
     createDb: () => ({
       db: {
         execute: vi.fn().mockResolvedValue({ rows: [] }),
         select: () => ({ from: () => ({ where: () => ({ limit: () => [], orderBy: () => ({ limit: () => [] }) }) }) }),
-        insert: () => ({ values: () => ({ returning: () => { const id = `user-${++userSeq}`; users.set(id, { id, username: 'devadmin' }); return [{ id, username: 'devadmin' }]; }, onConflictDoNothing: () => {}, onConflictDoUpdate: () => {} }) }),
+        insert: () => ({
+          values: () => ({
+            returning: vi.fn((data) => {
+              if (data.username) { const id = `user-${++userSeq}`; users.set(id, data); return [{ id, ...data }]; }
+              if (data.name) { const id = `pkg-${++pkgSeq}`; packages.set(data.name, { id, ...data }); return [{ id, ...data }]; }
+              if (data.packageId) { const id = `ver-${++verSeq}`; versions.set(id, { id, ...data }); return [{ id, ...data }]; }
+              if (data.packageVersionId) { const id = `rr-${++tokenSeq}`; riskReports.set(id, { id, ...data }); return [{ id, ...data }]; }
+              return [data];
+            }),
+            onConflictDoNothing: () => {},
+            onConflictDoUpdate: () => {},
+          }),
+        }),
         update: () => ({ set: () => ({ where: () => {} }) }),
         delete: () => ({ where: () => {} }),
       },
@@ -51,11 +70,95 @@ vi.mock('@safe-npm/db', () => {
       }),
       touchLastUsed: vi.fn(async () => {}),
     })),
+    PackagesRepository: vi.fn().mockImplementation(() => ({
+      findByName: vi.fn(async (name: string) => packages.get(name) ?? null),
+      findById: vi.fn(async (id: string) => { for (const [, v] of packages) { if (v.id === id) return v; } return null; }),
+      create: vi.fn(async (data: { name: string; visibility?: string }) => {
+        const id = `pkg-${++pkgSeq}`;
+        const pkg = { id, name: data.name, visibility: data.visibility ?? 'private', scope: data.scope, ownerUserId: data.ownerUserId };
+        packages.set(data.name, pkg);
+        return pkg;
+      }),
+      updateVisibility: vi.fn(async () => {}),
+    })),
+    PackageVersionsRepository: vi.fn().mockImplementation(() => ({
+      create: vi.fn(async (data: { packageId: string; version: string; publishId: string; tarballObjectKey: string; tarballSha512: string; status?: string }) => {
+        const id = `ver-${++verSeq}`;
+        const v = { id, ...data, status: data.status ?? 'private', metadata: data.metadata ?? {} };
+        versions.set(id, v);
+        return v;
+      }),
+      findById: vi.fn(async () => null),
+      findByPackageAndVersion: vi.fn(async () => []),
+      listByPackage: vi.fn(async (pkgId: string) => { return [...versions.values()].filter((v) => v.packageId === pkgId); }),
+      updateStatus: vi.fn(async () => {}),
+    })),
+    VersionAliasesRepository: vi.fn().mockImplementation(() => ({
+      upsert: vi.fn(async (data: { packageId: string; version: string; activePublishId: string }) => {
+        aliases.set(`${data.packageId}:${data.version}`, data);
+      }),
+      find: vi.fn(async () => null),
+      listByPackage: vi.fn(async (pkgId: string) => { return [...aliases.values()].filter((a) => a.packageId === pkgId); }),
+    })),
+    DistTagsRepository: vi.fn().mockImplementation(() => ({
+      upsert: vi.fn(async (data: { packageId: string; tag: string; version: string }) => {
+        distTags.set(`${data.packageId}:${data.tag}`, data);
+      }),
+      find: vi.fn(async () => null),
+      listByPackage: vi.fn(async (pkgId: string) => { return [...distTags.values()].filter((t) => t.packageId === pkgId); }),
+    })),
+    RiskReportsRepository: vi.fn().mockImplementation(() => ({
+      create: vi.fn(async (data: { packageVersionId: string; score: number; tier: string }) => {
+        const id = `rr-${++tokenSeq}`;
+        const r = { id, ...data };
+        riskReports.set(id, r);
+        return r;
+      }),
+      findById: vi.fn(async () => null),
+      findLatestByVersion: vi.fn(async () => null),
+      listByVersion: vi.fn(async () => []),
+    })),
   };
 });
 
 vi.mock('@safe-npm/object-store', () => ({
-  createObjectStoreFromEnv: () => ({ putObject: vi.fn(), getObject: vi.fn(), headObject: vi.fn(), deleteObject: vi.fn() }),
+  createObjectStoreFromEnv: () => ({
+    putObject: vi.fn(async () => 'key'),
+    getObject: vi.fn(async () => ({ body: { pipe: vi.fn() }, contentType: 'application/gzip' })),
+    headObject: vi.fn(async () => true),
+    deleteObject: vi.fn(async () => {}),
+    putTarball: vi.fn(async () => 'key'),
+    putAnalysis: vi.fn(async () => 'key'),
+  }),
+  ObjectStore: { tarballKey: (s: string) => `tarballs/${s}.tgz`, analysisKey: (s: string, v: string) => `analysis/${s}/${v}.json`, attestationKey: (s: string) => `attestations/${s}.json` },
+  computeSha512: (data: Buffer) => `sha512-${createHash('sha512').update(data).digest('base64')}`,
+}));
+
+vi.mock('@safe-npm/analyzer', () => ({
+  analyzeTarball: vi.fn(async (opts: { packageName: string; packageVersion: string }) => ({
+    package: opts.packageName,
+    version: opts.packageVersion,
+    publishId: 'pub-test',
+    tarballDigest: 'sha512-test',
+    analyzerVersion: '0.1.0',
+    generatedAt: new Date().toISOString(),
+    tarball: { sizeBytes: 100, unpackedSizeBytes: 200, fileCount: 2 },
+    metadata: { name: opts.packageName, version: opts.packageVersion, scripts: {}, dependencies: {}, devDependencies: {}, optionalDependencies: {}, peerDependencies: {}, bundledDependencies: [], files: [], contributors: [], maintainers: [] },
+    lifecycleScripts: [],
+    staticFindings: [],
+    readability: { likelyMinified: false, likelyObfuscated: false, sourceMapsPresent: false, humanReadableFileRatio: 1, minifiedLineRatio: 0, giantStringArrays: false },
+    nativeArtifacts: [],
+    builtinsUsed: [],
+  })),
+  QuarantineCache: vi.fn().mockImplementation(() => ({})),
+}));
+
+vi.mock('@safe-npm/scoring', () => ({
+  scoreAnalysis: vi.fn(() => ({
+    package: 'test', version: '1.0.0', publishId: 'pub-1', score: 90, tier: 'excellent',
+    confidence: 95, generatedAt: new Date().toISOString(), analyzerVersion: '0.1.0',
+    evidenceDigest: 'sha256:abc', blockers: [], warnings: [], facts: {}, components: [],
+  })),
 }));
 
 let app: AppInstance;
@@ -85,7 +188,7 @@ describe('health and readiness', () => {
 
 describe('not found handler', () => {
   it('returns 404 with request ID', async () => {
-    const resp = await app.inject({ method: 'GET', url: '/nonexistent' });
+    const resp = await app.inject({ method: 'DELETE', url: '/nonexistent-path-xyz' });
     expect(resp.statusCode).toBe(404);
     expect(resp.json().error).toBe('not found');
     expect(resp.json().requestId).toBeTruthy();
@@ -94,7 +197,6 @@ describe('not found handler', () => {
 
 describe('error handler', () => {
   it('returns structured error for thrown errors', async () => {
-    // Register route before any inject call.
     const testApp = await createApp({ logger: false, enableRateLimit: false });
     testApp.get('/test-error', async () => {
       const err = new Error('test error') as Error & { statusCode: number };
@@ -144,7 +246,6 @@ describe('auth', () => {
     const testApp = await createApp({ logger: false, enableRateLimit: false });
     testApp.get('/v1/protected', async (request) => ({ user: request.user }));
 
-    // Login to get a token.
     const loginResp = await testApp.inject({
       method: 'POST',
       url: '/v1/auth/login',
@@ -201,7 +302,6 @@ describe('requireScopes RBAC guard', () => {
     const testApp = await createApp({ logger: false, enableRateLimit: false });
     testApp.get('/v1/admin-only2', { preHandler: requireScopes(SCOPES.ADMIN) }, async () => ({ ok: true }));
 
-    // Login with username (gets read scope only).
     const loginResp = await testApp.inject({
       method: 'POST',
       url: '/v1/auth/login',
@@ -228,3 +328,149 @@ describe('generateToken', () => {
     expect(t1).not.toBe(t2);
   });
 });
+
+describe('publish API (8.2)', () => {
+  it('PUT /v1/packages/:name without auth returns 401', async () => {
+    const tarballData = Buffer.from('fake-tarball').toString('base64');
+    const resp = await app.inject({
+      method: 'PUT',
+      url: '/v1/packages/test-publish-pkg',
+      payload: {
+        name: 'test-publish-pkg',
+        versions: { '1.0.0': { name: 'test-publish-pkg', version: '1.0.0', dist: { integrity: computeSha512(Buffer.from('fake-tarball')) } } },
+        'dist-tags': { latest: '1.0.0' },
+        _attachments: { 'test-publish-pkg-1.0.0.tgz': { content_type: 'application/octet-stream', data: tarballData, length: 12 } },
+      },
+    });
+    expect(resp.statusCode).toBe(401);
+  });
+
+  it('PUT /v1/packages/:name with auth publishes a package', async () => {
+    // Login first.
+    const loginResp = await app.inject({
+      method: 'POST',
+      url: '/v1/auth/login',
+      payload: { token: 'dev-local-admin-token' },
+    });
+    const token = loginResp.json().token;
+
+    const tarballData = Buffer.from('fake-tarball');
+    const resp = await app.inject({
+      method: 'PUT',
+      url: '/v1/packages/test-publish-pkg',
+      headers: { authorization: `Bearer ${token}` },
+      payload: {
+        name: 'test-publish-pkg',
+        versions: { '1.0.0': { name: 'test-publish-pkg', version: '1.0.0', dist: { integrity: computeSha512(tarballData) } } },
+        'dist-tags': { latest: '1.0.0' },
+        _attachments: { 'test-publish-pkg-1.0.0.tgz': { content_type: 'application/octet-stream', data: tarballData.toString('base64'), length: tarballData.length } },
+        _safeNpm: { visibility: 'private' },
+      },
+    });
+    expect(resp.statusCode).toBe(200);
+    const body = resp.json();
+    expect(body.ok).toBe(true);
+    expect(body.package).toBe('test-publish-pkg');
+    expect(body.version).toBe('1.0.0');
+    expect(body.publishId).toBeTruthy();
+    expect(body.visibility).toBe('private');
+  });
+
+  it('rejects integrity mismatch', async () => {
+    const loginResp = await app.inject({
+      method: 'POST',
+      url: '/v1/auth/login',
+      payload: { token: 'dev-local-admin-token' },
+    });
+    const token = loginResp.json().token;
+
+    const tarballData = Buffer.from('fake-tarball');
+    const resp = await app.inject({
+      method: 'PUT',
+      url: '/v1/packages/test-integrity-fail',
+      headers: { authorization: `Bearer ${token}` },
+      payload: {
+        name: 'test-integrity-fail',
+        versions: { '1.0.0': { name: 'test-integrity-fail', version: '1.0.0', dist: { integrity: 'sha512-wrong' } } },
+        'dist-tags': { latest: '1.0.0' },
+        _attachments: { 'test-integrity-fail-1.0.0.tgz': { content_type: 'application/octet-stream', data: tarballData.toString('base64'), length: tarballData.length } },
+      },
+    });
+    expect(resp.statusCode).toBe(400);
+    expect(resp.json().error).toContain('integrity');
+  });
+});
+
+describe('packument endpoint (8.3)', () => {
+  it('GET /:name returns 404 for non-existent package', async () => {
+    const resp = await app.inject({ method: 'GET', url: '/nonexistent-pkg-xyz' });
+    expect(resp.statusCode).toBe(404);
+  });
+
+  it('GET /:name returns packument for published package', async () => {
+    // First publish.
+    const loginResp = await app.inject({
+      method: 'POST',
+      url: '/v1/auth/login',
+      payload: { token: 'dev-local-admin-token' },
+    });
+    const token = loginResp.json().token;
+
+    const tarballData = Buffer.from('fake-tarball');
+    await app.inject({
+      method: 'PUT',
+      url: '/v1/packages/test-packument-pkg',
+      headers: { authorization: `Bearer ${token}` },
+      payload: {
+        name: 'test-packument-pkg',
+        versions: { '1.0.0': { name: 'test-packument-pkg', version: '1.0.0', dist: { integrity: computeSha512(tarballData) } } },
+        'dist-tags': { latest: '1.0.0' },
+        _attachments: { 'test-packument-pkg-1.0.0.tgz': { content_type: 'application/octet-stream', data: tarballData.toString('base64'), length: tarballData.length } },
+      },
+    });
+
+    // Then fetch packument (with auth since it's private).
+    const resp = await app.inject({
+      method: 'GET',
+      url: '/test-packument-pkg',
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(resp.statusCode).toBe(200);
+    const body = resp.json();
+    expect(body.name).toBe('test-packument-pkg');
+    expect(body.versions).toBeTruthy();
+    expect(body['dist-tags']).toBeTruthy();
+  });
+
+  it('GET /:name returns 401 for private package without auth', async () => {
+    // First publish a private package.
+    const loginResp = await app.inject({
+      method: 'POST',
+      url: '/v1/auth/login',
+      payload: { token: 'dev-local-admin-token' },
+    });
+    const token = loginResp.json().token;
+
+    const tarballData = Buffer.from('fake-tarball');
+    await app.inject({
+      method: 'PUT',
+      url: '/v1/packages/test-private-pkg',
+      headers: { authorization: `Bearer ${token}` },
+      payload: {
+        name: 'test-private-pkg',
+        versions: { '1.0.0': { name: 'test-private-pkg', version: '1.0.0', dist: { integrity: computeSha512(tarballData) } } },
+        'dist-tags': { latest: '1.0.0' },
+        _attachments: { 'test-private-pkg-1.0.0.tgz': { content_type: 'application/octet-stream', data: tarballData.toString('base64'), length: tarballData.length } },
+        _safeNpm: { visibility: 'private' },
+      },
+    });
+
+    // Fetch without auth.
+    const resp = await app.inject({ method: 'GET', url: '/test-private-pkg' });
+    expect(resp.statusCode).toBe(401);
+  });
+});
+
+function computeSha512(data: Buffer): string {
+  return `sha512-${createHash('sha512').update(data).digest('base64')}`;
+}

@@ -494,57 +494,57 @@ Definition of done:
 
 ### 8.1 CLI pack command
 
-- [ ] Implement `safe-npm publish` command skeleton.
-- [ ] Run `npm pack --json --dry-run` or equivalent to preview contents.
-- [ ] Run actual pack into temp directory.
-- [ ] Compute integrity.
-- [ ] Run local analyzer before upload.
-- [ ] Show local publish summary.
-- [ ] Default visibility to `private`.
-- [ ] Require `--public` or `--stage-public` for public intent.
+- [x] Implement `safe-npm publish` command skeleton.
+- [x] Run `npm pack --json --dry-run` or equivalent to preview contents.
+- [x] Run actual pack into temp directory.
+- [x] Compute integrity.
+- [x] Run local analyzer before upload.
+- [x] Show local publish summary.
+- [x] Default visibility to `private`.
+- [x] Require `--public` or `--stage-public` for public intent.
 
 ### 8.2 Publish API
 
-- [ ] Implement `POST /v1/packages` or `POST /v1/packages/:name/versions`.
-- [ ] Validate auth scope.
-- [ ] Validate package name.
-- [ ] Validate version.
-- [ ] Validate tarball integrity.
-- [ ] Store tarball object.
-- [ ] Create package if absent.
-- [ ] Create package version with new `publish_id`.
-- [ ] Set `version_aliases` active publish ID.
-- [ ] Set default dist-tag if provided.
-- [ ] Store initial analysis and risk report if provided; otherwise enqueue analysis.
+- [x] Implement `POST /v1/packages` or `POST /v1/packages/:name/versions`.
+- [x] Validate auth scope.
+- [x] Validate package name.
+- [x] Validate version.
+- [x] Validate tarball integrity.
+- [x] Store tarball object.
+- [x] Create package if absent.
+- [x] Create package version with new `publish_id`.
+- [x] Set `version_aliases` active publish ID.
+- [x] Set default dist-tag if provided.
+- [x] Store initial analysis and risk report if provided; otherwise enqueue analysis.
 - [ ] Audit log publish.
 
 ### 8.3 Packument endpoint
 
-- [ ] Implement `GET /<encoded-package-name>`.
-- [ ] Enforce ACL for private package.
-- [ ] Generate packument.
-- [ ] Include only versions visible to caller.
-- [ ] Exclude retracted versions.
-- [ ] Include tarball URLs pointing to publish ID or digest-specific path.
+- [x] Implement `GET /<encoded-package-name>`.
+- [x] Enforce ACL for private package.
+- [x] Generate packument.
+- [x] Include only versions visible to caller.
+- [x] Exclude retracted versions.
+- [x] Include tarball URLs pointing to publish ID or digest-specific path.
 - [ ] Add tests with npm-compatible client or `pacote`.
 
 ### 8.4 Tarball endpoint
 
-- [ ] Implement `GET /<encoded-package-name>/-/<tarball-name>.tgz`.
-- [ ] Resolve tarball to package version/publish ID.
-- [ ] Enforce ACL.
-- [ ] Stream from object storage.
-- [ ] Set content type.
-- [ ] Set immutable cache headers for digest/publish-ID URLs.
+- [x] Implement `GET /<encoded-package-name>/-/<tarball-name>.tgz`.
+- [x] Resolve tarball to package version/publish ID.
+- [x] Enforce ACL.
+- [x] Stream from object storage.
+- [x] Set content type.
+- [x] Set immutable cache headers for digest/publish-ID URLs.
 - [ ] Verify object digest before response in dev/test or background job.
 
 ### 8.5 CLI install integration
 
-- [ ] Implement `safe-npm install <pkg>` using private registry first.
-- [ ] Write temporary `.npmrc` or pass `--registry` to delegated npm command.
-- [ ] Run preflight before delegation.
-- [ ] Respect policy decision.
-- [ ] Delegate to npm only after approval.
+- [x] Implement `safe-npm install <pkg>` using private registry first.
+- [x] Write temporary `.npmrc` or pass `--registry` to delegated npm command.
+- [x] Run preflight before delegation.
+- [x] Respect policy decision.
+- [x] Delegate to npm only after approval.
 - [ ] Add integration test installing a private fixture package.
 
 Definition of done:

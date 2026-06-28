@@ -122,21 +122,45 @@ export async function registerAuth(app: FastifyInstance, db: DbClient): Promise<
   });
 
   // Bearer token auth hook — runs on all /v1/* routes except /v1/auth/*.
+  // For packument/tarball routes (/:name), auth is optional (public packages
+  // don't require it), but if a token is present we validate and populate
+  // request.user.
   app.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
     const url = request.url;
-    if (!url.startsWith('/v1/') || url.startsWith('/v1/auth/')) return;
+    const isV1Route = url.startsWith('/v1/');
+    const isAuthRoute = url.startsWith('/v1/auth/');
+    const isRegistryRoute = !url.startsWith('/v1/') && !url.startsWith('/health') && !url.startsWith('/ready');
 
+    // Skip auth for /v1/auth/* routes.
+    if (isAuthRoute) return;
+
+    // For /v1/* routes (non-auth), auth is required.
+    // For registry routes (/:name, /:name/-/:tarball), auth is optional.
     const authHeader = request.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      reply.status(401);
-      return reply.send({ error: 'missing or invalid authorization header', statusCode: 401, requestId: request.id });
+
+    if (isV1Route && !isAuthRoute) {
+      // Required auth for /v1/* routes.
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        reply.status(401);
+        return reply.send({ error: 'missing or invalid authorization header', statusCode: 401, requestId: request.id });
+      }
+    } else if (isRegistryRoute) {
+      // Optional auth for registry routes.
+      if (!authHeader || !authHeader.startsWith('Bearer ')) return;
+    } else {
+      // Non-v1, non-registry routes (health, ready) — skip.
+      return;
     }
 
     const token = authHeader.slice('Bearer '.length).trim();
     const user = await auth.validateToken(token);
     if (!user) {
-      reply.status(401);
-      return reply.send({ error: 'invalid or expired token', statusCode: 401, requestId: request.id });
+      if (isV1Route) {
+        reply.status(401);
+        return reply.send({ error: 'invalid or expired token', statusCode: 401, requestId: request.id });
+      }
+      // For registry routes, invalid token = just don't populate user.
+      return;
     }
 
     request.user = user;

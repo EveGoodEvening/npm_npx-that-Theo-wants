@@ -12,6 +12,9 @@
 - **Zod schemas used as parse boundaries should convert errors to domain errors.** Wrap `PackageSpec.parse(...)` in try/catch and rethrow as `InvalidSpecError` so callers don't see `ZodError`.
 - **`PackageSpec.name` must allow empty strings for non-registry sources** (git/file/directory/remote) where `npm-package-arg` does not produce a name. Validate registry names separately with `PackageName`.
 - **Live network tests should be gated by an env var** (e.g. `SAFE_NPM_RUN_NETWORK_TESTS=1`) and skipped by default so CI doesn't hit the network.
+- **Fastify route ordering: `/:name` catches all single-segment paths.** When adding a catch-all packument route (`GET /:name`), the existing "not found" test (`GET /nonexistent`) will hit the packument route instead of the 404 handler. Use a method/path combo that doesn't match any registered route (e.g. `DELETE /nonexistent-path-xyz`) for the 404 test.
+- **Fastify `onRequest` auth hooks apply to all routes.** When adding registry routes outside `/v1/*` (e.g. `GET /:name` for packuments), the auth hook needs to handle optional auth for these routes (public packages don't require a token, but private ones do). Check `request.url` prefix to distinguish required-auth (`/v1/*`) from optional-auth (registry) routes.
+- **`npm pack --json` outputs an array.** Parse `JSON.parse(stdout)` and take `[0]` to get the filename/shasum/size.
 
 ## Conventions
 
