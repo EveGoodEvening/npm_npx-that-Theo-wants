@@ -9,6 +9,7 @@ import {
   VersionAliasesRepository,
   DistTagsRepository,
   RiskReportsRepository,
+  StageRecordsRepository,
   type DbClient,
 } from '@safe-npm/db';
 import { ObjectStore, computeSha512 } from '@safe-npm/object-store';
@@ -420,6 +421,119 @@ export async function registerRegistryRoutes(
       reason: body.reason,
       facts: { observedInstalls, ageHours },
     };
+  });
+
+  // --- 15.2: Stage API ---
+
+  const stageRepo = new StageRecordsRepository(db);
+
+  // POST /v1/stage — create a stage record for a package version.
+  app.post('/v1/stage', {
+    preHandler: requireScopes(SCOPES.PUBLISH),
+  }, async (request, reply) => {
+    const body = request.body as { packageId?: string; packageVersionId?: string };
+    if (!body?.packageId || !body?.packageVersionId) {
+      reply.status(400);
+      return { error: 'packageId and packageVersionId are required', statusCode: 400, requestId: request.id };
+    }
+
+    const stage = await stageRepo.create({
+      packageId: body.packageId,
+      packageVersionId: body.packageVersionId,
+      createdBy: request.user!.userId,
+    });
+
+    return { ok: true, stageId: stage.id, status: stage.status };
+  });
+
+  // GET /v1/stage — list pending stage records.
+  app.get('/v1/stage', {
+    preHandler: requireScopes(SCOPES.READ),
+  }, async () => {
+    const pending = await stageRepo.listPending();
+    return { stages: pending };
+  });
+
+  // GET /v1/stage/:stageId — get a specific stage record.
+  app.get('/v1/stage/:stageId', {
+    preHandler: requireScopes(SCOPES.READ),
+  }, async (request, reply) => {
+    const { stageId } = request.params as { stageId: string };
+    const stage = await stageRepo.findById(stageId);
+    if (!stage) {
+      reply.status(404);
+      return { error: 'stage not found', statusCode: 404, requestId: request.id };
+    }
+    return { stage };
+  });
+
+  // DELETE /v1/stage/:stageId — cancel a pending stage.
+  app.delete('/v1/stage/:stageId', {
+    preHandler: requireScopes(SCOPES.PUBLISH),
+  }, async (request, reply) => {
+    const { stageId } = request.params as { stageId: string };
+    const stage = await stageRepo.findById(stageId);
+    if (!stage) {
+      reply.status(404);
+      return { error: 'stage not found', statusCode: 404, requestId: request.id };
+    }
+    if (stage.status !== 'pending') {
+      reply.status(409);
+      return { error: 'stage is not pending', statusCode: 409, requestId: request.id };
+    }
+    await stageRepo.cancel(stageId);
+    return { ok: true, status: 'cancelled' };
+  });
+
+  // POST /v1/stage/:stageId/approve — approve a stage (promote to public).
+  app.post('/v1/stage/:stageId/approve', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { stageId } = request.params as { stageId: string };
+    const body = request.body as { reviewNotes?: string };
+    const stage = await stageRepo.findById(stageId);
+    if (!stage) {
+      reply.status(404);
+      return { error: 'stage not found', statusCode: 404, requestId: request.id };
+    }
+    if (stage.status !== 'pending') {
+      reply.status(409);
+      return { error: 'stage is not pending', statusCode: 409, requestId: request.id };
+    }
+
+    // TODO: Require risk report before approval (design 15.2).
+    // TODO: Require policy pass or recorded waiver.
+
+    await stageRepo.approve(stageId, request.user!.userId, body?.reviewNotes);
+
+    // Update package version status to public.
+    const versionsRepo = new PackageVersionsRepository(db);
+    await versionsRepo.updateStatus(stage.packageVersionId, 'public');
+
+    // Update package visibility to staged_public or public.
+    const packagesRepo = new PackagesRepository(db);
+    await packagesRepo.updateVisibility(stage.packageId, 'public');
+
+    return { ok: true, status: 'approved', stageId };
+  });
+
+  // POST /v1/stage/:stageId/reject — reject a stage.
+  app.post('/v1/stage/:stageId/reject', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { stageId } = request.params as { stageId: string };
+    const body = request.body as { reviewNotes?: string };
+    const stage = await stageRepo.findById(stageId);
+    if (!stage) {
+      reply.status(404);
+      return { error: 'stage not found', statusCode: 404, requestId: request.id };
+    }
+    if (stage.status !== 'pending') {
+      reply.status(409);
+      return { error: 'stage is not pending', statusCode: 409, requestId: request.id };
+    }
+    await stageRepo.reject(stageId, request.user!.userId, body?.reviewNotes);
+    return { ok: true, status: 'rejected', stageId };
   });
 }
 

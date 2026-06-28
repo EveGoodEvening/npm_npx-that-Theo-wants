@@ -334,3 +334,34 @@ export const authTokens = safenpm.table(
     index('at_token_hash_idx').on(t.tokenHash),
   ],
 );
+
+// --- Stage records (Section 15.1) ---
+
+export const stageStatus = pgEnum('stage_status', [
+  'pending',
+  'approved',
+  'rejected',
+  'cancelled',
+]);
+
+export const stageRecords = safenpm.table(
+  'stage_records',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    packageId: uuid('package_id').notNull().references(() => packages.id),
+    packageVersionId: uuid('package_version_id').notNull().references(() => packageVersions.id),
+    createdBy: uuid('created_by').references(() => users.id),
+    status: stageStatus('status').notNull().default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    approvedBy: uuid('approved_by').references(() => users.id),
+    approvedAt: timestamp('approved_at', { withTimezone: true }),
+    rejectedBy: uuid('rejected_by').references(() => users.id),
+    rejectedAt: timestamp('rejected_at', { withTimezone: true }),
+    reviewNotes: text('review_notes'),
+  },
+  (t) => [
+    index('sr_package_idx').on(t.packageId),
+    index('sr_version_idx').on(t.packageVersionId),
+    index('sr_status_idx').on(t.status),
+  ],
+);

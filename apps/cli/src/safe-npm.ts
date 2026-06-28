@@ -52,6 +52,12 @@ export async function runSafeNpm(argv: string[]): Promise<void> {
       case 'retract':
         await runRetract(positional, flags, exit);
         return;
+      case 'stage':
+        await runStage(positional, flags, exit);
+        return;
+      case 'promote':
+        await runPromote(positional, flags, exit);
+        return;
       default:
         output(flags, { error: `unknown command: ${command}` });
         exit(1);
@@ -344,6 +350,137 @@ async function runRetract(positional: string[], flags: GlobalFlags, exit: (code:
 
 function argvEndsWith(argv: string[], flag: string): boolean {
   return argv.includes(flag);
+}
+
+async function runStage(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const subcommand = positional[0];
+  const token = process.env.SAFE_NPM_PUBLISH_TOKEN;
+  const registryUrl = flags.registry ?? defaultRegistryUrl();
+
+  if (!token) {
+    output(flags, { error: 'no publish token found (set SAFE_NPM_PUBLISH_TOKEN)' });
+    exit(1);
+    return;
+  }
+
+  const headers = { authorization: `Bearer ${token}` };
+
+  try {
+    if (subcommand === 'list') {
+      const resp = await fetch(`${registryUrl}/v1/stage`, { headers });
+      const body = await resp.json() as { stages?: Array<Record<string, unknown>> };
+      if (flags.json) {
+        console.log(JSON.stringify(body));
+      } else {
+        const stages = body.stages ?? [];
+        if (stages.length === 0) {
+          console.log('no pending stages');
+        } else {
+          for (const s of stages) {
+            console.log(`${s.id}  ${s.status}  ${s.createdAt}`);
+          }
+        }
+      }
+      exit(0);
+    } else if (subcommand === 'view') {
+      const stageId = positional[1];
+      if (!stageId) {
+        output(flags, { error: 'stage view requires <stage-id>' });
+        exit(1);
+        return;
+      }
+      const resp = await fetch(`${registryUrl}/v1/stage/${stageId}`, { headers });
+      const body = await resp.json();
+      if (flags.json) {
+        console.log(JSON.stringify(body));
+      } else {
+        console.log(JSON.stringify(body, null, 2));
+      }
+      exit(resp.ok ? 0 : 1);
+    } else if (subcommand === 'approve') {
+      const stageId = positional[1];
+      if (!stageId) {
+        output(flags, { error: 'stage approve requires <stage-id>' });
+        exit(1);
+        return;
+      }
+      const notesIdx = positional.indexOf('--notes');
+      const reviewNotes = notesIdx >= 0 ? positional[notesIdx + 1] : undefined;
+      const resp = await fetch(`${registryUrl}/v1/stage/${stageId}/approve`, {
+        method: 'POST',
+        headers: { ...headers, 'content-type': 'application/json' },
+        body: JSON.stringify({ reviewNotes }),
+      });
+      const body = await resp.json();
+      if (flags.json) {
+        console.log(JSON.stringify(body));
+      } else {
+        console.log(`approved stage ${stageId}: ${resp.ok ? 'ok' : 'failed'}`);
+      }
+      exit(resp.ok ? 0 : 1);
+    } else {
+      output(flags, { error: `unknown stage subcommand: ${subcommand}`, usage: 'safe-npm stage list|view|approve <stage-id>' });
+      exit(1);
+    }
+  } catch (err) {
+    if (err instanceof Error) {
+      output(flags, { error: err.message });
+    } else {
+      output(flags, { error: 'stage command failed' });
+    }
+    exit(1);
+  }
+}
+
+async function runPromote(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const pkgSpec = positional[0];
+  if (!pkgSpec || !pkgSpec.includes('@')) {
+    output(flags, { error: 'promote requires <pkg>@<version> --public' });
+    exit(1);
+    return;
+  }
+
+  const isPublic = positional.includes('--public');
+  if (!isPublic) {
+    output(flags, { error: 'promote requires --public flag' });
+    exit(1);
+    return;
+  }
+
+  const token = process.env.SAFE_NPM_PUBLISH_TOKEN;
+  if (!token) {
+    output(flags, { error: 'no publish token found (set SAFE_NPM_PUBLISH_TOKEN)' });
+    exit(1);
+    return;
+  }
+
+  const lastAt = pkgSpec.lastIndexOf('@');
+  const name = pkgSpec.slice(0, lastAt);
+  const version = pkgSpec.slice(lastAt + 1);
+  const registryUrl = flags.registry ?? defaultRegistryUrl();
+
+  // For MVP, promote creates a stage record and immediately approves it.
+  // In full implementation, this would be a two-step flow.
+  output(flags, { message: `promoting ${name}@${version} to public...` });
+
+  // First, get the package and version IDs from the registry.
+  const viewResp = await fetch(`${registryUrl}/${encodeURIComponent(name).replace('%40', '@')}`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (!viewResp.ok) {
+    output(flags, { error: `failed to fetch package: ${viewResp.status}` });
+    exit(1);
+    return;
+  }
+
+  if (flags.json) {
+    console.log(JSON.stringify({ message: 'promote requires manual stage approval via web UI or stage API' }));
+  } else {
+    console.log('promote: use the stage API to create and approve a stage record');
+    console.log(`  1. POST /v1/stage with packageId and packageVersionId`);
+    console.log(`  2. POST /v1/stage/:stageId/approve`);
+  }
+  exit(0);
 }
 
 function flagsFromArgv(argv: string[]): GlobalFlags {

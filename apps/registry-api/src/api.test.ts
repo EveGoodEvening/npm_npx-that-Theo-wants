@@ -118,6 +118,18 @@ vi.mock('@safe-npm/db', () => {
       findLatestByVersion: vi.fn(async () => null),
       listByVersion: vi.fn(async () => []),
     })),
+    StageRecordsRepository: vi.fn().mockImplementation(() => ({
+      create: vi.fn(async (data: { packageId: string; packageVersionId: string }) => {
+        const id = `stage-${++tokenSeq}`;
+        return { id, status: 'pending', ...data, createdAt: new Date().toISOString() };
+      }),
+      findById: vi.fn(async () => null),
+      listPending: vi.fn(async () => []),
+      listByPackage: vi.fn(async () => []),
+      approve: vi.fn(async () => {}),
+      reject: vi.fn(async () => {}),
+      cancel: vi.fn(async () => {}),
+    })),
   };
 });
 

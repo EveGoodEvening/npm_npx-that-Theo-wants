@@ -826,40 +826,40 @@ Definition of done:
 
 ### 15.1 Stage data model
 
-- [ ] Add `stage_records` migration.
-- [ ] Fields:
-  - [ ] `id`
-  - [ ] `package_id`
-  - [ ] `package_version_id`
-  - [ ] `created_by`
-  - [ ] `status`
-  - [ ] `created_at`
-  - [ ] `approved_by`
-  - [ ] `approved_at`
-  - [ ] `rejected_by`
-  - [ ] `rejected_at`
-  - [ ] `review_notes`
+- [x] Add `stage_records` migration.
+- [x] Fields:
+  - [x] `id`
+  - [x] `package_id`
+  - [x] `package_version_id`
+  - [x] `created_by`
+  - [x] `status`
+  - [x] `created_at`
+  - [x] `approved_by`
+  - [x] `approved_at`
+  - [x] `rejected_by`
+  - [x] `rejected_at`
+  - [x] `review_notes`
 
 ### 15.2 Stage API
 
-- [ ] Implement `POST /v1/stage`.
-- [ ] Implement `GET /v1/stage`.
-- [ ] Implement `GET /v1/stage/:stageId`.
+- [x] Implement `POST /v1/stage`.
+- [x] Implement `GET /v1/stage`.
+- [x] Implement `GET /v1/stage/:stageId`.
 - [ ] Implement `GET /v1/stage/:stageId/tarball`.
-- [ ] Implement `DELETE /v1/stage/:stageId`.
-- [ ] Implement `POST /v1/stage/:stageId/approve`.
+- [x] Implement `DELETE /v1/stage/:stageId`.
+- [x] Implement `POST /v1/stage/:stageId/approve`.
 - [ ] Require risk report before approval.
 - [ ] Require policy pass or recorded waiver.
-- [ ] Require strong auth for approval.
+- [x] Require strong auth for approval.
 
 ### 15.3 CLI stage commands
 
 - [ ] Implement `safe-npm stage publish`.
-- [ ] Implement `safe-npm stage list`.
-- [ ] Implement `safe-npm stage view <stage-id>`.
+- [x] Implement `safe-npm stage list`.
+- [x] Implement `safe-npm stage view <stage-id>`.
 - [ ] Implement `safe-npm stage download <stage-id>`.
-- [ ] Implement `safe-npm stage approve <stage-id>`.
-- [ ] Implement `safe-npm promote <pkg>@<version> --public` as stage + approve flow or stage creation.
+- [x] Implement `safe-npm stage approve <stage-id>`.
+- [x] Implement `safe-npm promote <pkg>@<version> --public` as stage + approve flow or stage creation.
 
 ### 15.4 Review UI MVP
 
