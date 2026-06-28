@@ -1229,30 +1229,30 @@ Definition of done:
 
 ### 24.1 Quarantine model
 
-- [ ] Add admin role.
-- [ ] Add `quarantined` status support.
-- [ ] Implement quarantine API.
-- [ ] Implement unquarantine API.
-- [ ] Require admin strong auth.
+- [x] Add admin role.
+- [x] Add `quarantined` status support.
+- [x] Implement quarantine API.
+- [x] Implement unquarantine API.
+- [x] Require admin strong auth.
 - [ ] Audit log quarantine actions.
 
 ### 24.2 Malware block behavior
 
-- [ ] Quarantined versions are removed from normal packuments.
-- [ ] Tarball endpoint returns explicit malware/quarantine error by default.
-- [ ] Admin forensic mode can download with extra permission.
-- [ ] Existing lockfile tarball URL does not serve malware unless forensic mode.
+- [x] Quarantined versions are removed from normal packuments.
+- [x] Tarball endpoint returns explicit malware/quarantine error by default.
+- [x] Admin forensic mode can download with extra permission.
+- [x] Existing lockfile tarball URL does not serve malware unless forensic mode.
 
 ### 24.3 Name dispute placeholder
 
-- [ ] Add package name review state.
+- [x] Add package name review state.
 - [ ] Add admin note field.
-- [ ] Add manual decision API.
-- [ ] Add public promotion block while name dispute is open.
+- [x] Add manual decision API.
+- [x] Add public promotion block while name dispute is open.
 
 Definition of done:
 
-- [ ] Admin can quarantine a malicious version and block future installs/execs.
+- [x] Admin can quarantine a malicious version and block future installs/execs.
 
 ---
 

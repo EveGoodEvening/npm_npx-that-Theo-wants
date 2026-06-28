@@ -236,8 +236,8 @@ export async function registerRegistryRoutes(
     const aliases = await aliasesRepo.listByPackage(pkg.id);
     const tags = await distTagsRepo.listByPackage(pkg.id);
 
-    // Filter: exclude retracted/deleted versions.
-    const visibleStatuses = ['private', 'staged_public', 'public', 'deprecated', 'quarantined'];
+    // Filter: exclude retracted/deleted/quarantined versions from normal packuments (24.2).
+    const visibleStatuses = ['private', 'staged_public', 'public', 'deprecated'];
     const visibleVersions = allVersions.filter((v) => visibleStatuses.includes(v.status));
 
     // Build packument.
@@ -357,6 +357,15 @@ export async function registerRegistryRoutes(
     if (!version) {
       reply.status(404);
       return { error: 'version not found', statusCode: 404, requestId: request.id };
+    }
+
+    // 24.2: Block tarball download for quarantined versions by default.
+    if (version.status === 'quarantined') {
+      const forensicMode = request.headers['x-safe-npm-forensic'] === 'true' && request.user?.scopes.includes(SCOPES.ADMIN);
+      if (!forensicMode) {
+        reply.status(451);
+        return { error: 'version is quarantined', statusCode: 451, requestId: request.id };
+      }
     }
 
     // Stream from object storage.
@@ -816,6 +825,117 @@ export async function registerRegistryRoutes(
 
     const policy = await policyRepo.upsertPolicy(scopeType, scopeId, body.policy, request.user!.userId);
     return { ok: true, policyId: policy.id };
+  });
+
+  // --- 24.1: Quarantine API ---
+
+  // POST /v1/packages/:name/versions/:version/quarantine — quarantine a version.
+  app.post('/v1/packages/:name/versions/:version/quarantine', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { name, version } = request.params as { name: string; version: string };
+    const body = request.body as { reason?: string };
+
+    const packagesRepo = new PackagesRepository(db);
+    const versionsRepo = new PackageVersionsRepository(db);
+    const pkg = await packagesRepo.findByName(name);
+    if (!pkg) {
+      reply.status(404);
+      return { error: 'package not found', statusCode: 404, requestId: request.id };
+    }
+
+    const versions = await versionsRepo.findByPackageAndVersion(pkg.id, version);
+    const ver = versions[0];
+    if (!ver) {
+      reply.status(404);
+      return { error: 'version not found', statusCode: 404, requestId: request.id };
+    }
+
+    // Update status to quarantined.
+    await versionsRepo.updateStatus(ver.id, 'quarantined');
+
+    // TODO: Audit log quarantine action.
+
+    return { ok: true, status: 'quarantined', package: name, version, reason: body?.reason };
+  });
+
+  // POST /v1/packages/:name/versions/:version/unquarantine — unquarantine a version.
+  app.post('/v1/packages/:name/versions/:version/unquarantine', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { name, version } = request.params as { name: string; version: string };
+    const body = request.body as { reason?: string };
+
+    const packagesRepo = new PackagesRepository(db);
+    const versionsRepo = new PackageVersionsRepository(db);
+    const pkg = await packagesRepo.findByName(name);
+    if (!pkg) {
+      reply.status(404);
+      return { error: 'package not found', statusCode: 404, requestId: request.id };
+    }
+
+    const versions = await versionsRepo.findByPackageAndVersion(pkg.id, version);
+    const ver = versions[0];
+    if (!ver) {
+      reply.status(404);
+      return { error: 'version not found', statusCode: 404, requestId: request.id };
+    }
+
+    if (ver.status !== 'quarantined') {
+      reply.status(409);
+      return { error: 'version is not quarantined', statusCode: 409, requestId: request.id };
+    }
+
+    // Restore to public or private based on package visibility.
+    const newStatus = pkg.visibility === 'public' ? 'public' : 'private';
+    await versionsRepo.updateStatus(ver.id, newStatus);
+
+    // TODO: Audit log unquarantine action.
+
+    return { ok: true, status: newStatus, package: name, version, reason: body?.reason };
+  });
+
+  // --- 24.3: Name dispute placeholder ---
+
+  // POST /v1/packages/:name/name-dispute — file a name dispute.
+  app.post('/v1/packages/:name/name-dispute', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { name } = request.params as { name: string };
+    const body = request.body as { reviewNotes?: string };
+
+    const packagesRepo = new PackagesRepository(db);
+    const pkg = await packagesRepo.findByName(name);
+    if (!pkg) {
+      reply.status(404);
+      return { error: 'package not found', statusCode: 404, requestId: request.id };
+    }
+
+    // Set package visibility to quarantined to block public promotion.
+    await packagesRepo.updateVisibility(pkg.id, 'quarantined');
+
+    return { ok: true, status: 'name-dispute', package: name, reviewNotes: body?.reviewNotes };
+  });
+
+  // POST /v1/packages/:name/name-dispute/resolve — resolve a name dispute.
+  app.post('/v1/packages/:name/name-dispute/resolve', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { name } = request.params as { name: string };
+    const body = request.body as { decision?: string; reviewNotes?: string };
+
+    const packagesRepo = new PackagesRepository(db);
+    const pkg = await packagesRepo.findByName(name);
+    if (!pkg) {
+      reply.status(404);
+      return { error: 'package not found', statusCode: 404, requestId: request.id };
+    }
+
+    // Restore visibility based on decision.
+    const newVisibility = body?.decision === 'approve' ? 'public' : 'private';
+    await packagesRepo.updateVisibility(pkg.id, newVisibility);
+
+    return { ok: true, status: 'resolved', package: name, decision: body?.decision, reviewNotes: body?.reviewNotes };
   });
 }
 
