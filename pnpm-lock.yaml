@@ -123,7 +123,26 @@ importers:
         version: 2.1.9(@types/node@22.20.0)
 
   apps/workers:
+    dependencies:
+      '@safe-npm/analyzer':
+        specifier: workspace:*
+        version: link:../../packages/analyzer
+      '@safe-npm/core-types':
+        specifier: workspace:*
+        version: link:../../packages/core-types
+      '@safe-npm/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@safe-npm/object-store':
+        specifier: workspace:*
+        version: link:../../packages/object-store
+      '@safe-npm/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
     devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.0
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

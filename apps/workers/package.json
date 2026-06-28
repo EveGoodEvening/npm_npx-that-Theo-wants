@@ -8,7 +8,15 @@
     "typecheck": "tsc -b",
     "test": "vitest run --passWithNoTests"
   },
+  "dependencies": {
+    "@safe-npm/analyzer": "workspace:*",
+    "@safe-npm/core-types": "workspace:*",
+    "@safe-npm/db": "workspace:*",
+    "@safe-npm/object-store": "workspace:*",
+    "@safe-npm/scoring": "workspace:*"
+  },
   "devDependencies": {
+    "@types/node": "^22.10.0",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
   }

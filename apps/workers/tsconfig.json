@@ -6,5 +6,12 @@
     "outDir": "./dist"
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "**/*.test.ts"]
+  "exclude": ["dist", "**/*.test.ts"],
+  "references": [
+    { "path": "../../packages/core-types" },
+    { "path": "../../packages/db" },
+    { "path": "../../packages/object-store" },
+    { "path": "../../packages/analyzer" },
+    { "path": "../../packages/scoring" }
+  ]
 }

@@ -591,40 +591,40 @@ Definition of done:
 
 ### 10.1 Queue setup
 
-- [ ] Add queue library.
-- [ ] Define job types:
-  - [ ] `analyze-tarball`
-  - [ ] `score-version`
-  - [ ] `rollup-install-counts`
-  - [ ] `audit-package`
-  - [ ] `sign-version`
-- [ ] Add worker process entrypoint.
-- [ ] Add retry/backoff policy.
-- [ ] Add dead-letter handling.
-- [ ] Add idempotency keys per job.
+- [x] Add queue library.
+- [x] Define job types:
+  - [x] `analyze-tarball`
+  - [x] `score-version`
+  - [x] `rollup-install-counts`
+  - [x] `audit-package`
+  - [x] `sign-version`
+- [x] Add worker process entrypoint.
+- [x] Add retry/backoff policy.
+- [x] Add dead-letter handling.
+- [x] Add idempotency keys per job.
 
 ### 10.2 Analyzer worker
 
-- [ ] Fetch tarball by object key.
-- [ ] Run analyzer.
-- [ ] Store analysis artifact.
+- [x] Fetch tarball by object key.
+- [x] Run analyzer.
+- [x] Store analysis artifact.
 - [ ] Store permission report.
-- [ ] Enqueue score job.
-- [ ] Mark job success/failure.
+- [x] Enqueue score job.
+- [x] Mark job success/failure.
 
 ### 10.3 Score worker
 
-- [ ] Load analysis artifact.
+- [x] Load analysis artifact.
 - [ ] Load package/version metadata.
-- [ ] Generate risk report.
-- [ ] Store risk report.
-- [ ] Update package/version summary fields.
+- [x] Generate risk report.
+- [x] Store risk report.
+- [x] Update package/version summary fields.
 
 ### 10.4 Signature worker
 
-- [ ] Sign new package version after tarball storage.
+- [x] Sign new package version after tarball storage.
 - [ ] Store signature metadata.
-- [ ] Trigger packument cache invalidation.
+- [x] Trigger packument cache invalidation.
 
 Definition of done:
 
