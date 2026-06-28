@@ -474,3 +474,52 @@ describe('packument endpoint (8.3)', () => {
 function computeSha512(data: Buffer): string {
   return `sha512-${createHash('sha512').update(data).digest('base64')}`;
 }
+
+describe('keys endpoint (9.1)', () => {
+  it('GET /-/npm/v1/keys returns public keys', async () => {
+    const resp = await app.inject({ method: 'GET', url: '/-/npm/v1/keys' });
+    expect(resp.statusCode).toBe(200);
+    const body = resp.json();
+    expect(body.keys).toBeInstanceOf(Array);
+    expect(body.keys.length).toBeGreaterThan(0);
+    expect(body.keys[0].keyid).toMatch(/^sha256:/);
+    expect(body.keys[0].key).toContain('PUBLIC KEY');
+  });
+});
+
+describe('packument signatures (9.2)', () => {
+  it('packument includes dist.signatures when key manager is configured', async () => {
+    // Publish a package.
+    const loginResp = await app.inject({
+      method: 'POST',
+      url: '/v1/auth/login',
+      payload: { token: 'dev-local-admin-token' },
+    });
+    const token = loginResp.json().token;
+
+    const tarballData = Buffer.from('fake-tarball');
+    await app.inject({
+      method: 'PUT',
+      url: '/v1/packages/test-sig-pkg',
+      headers: { authorization: `Bearer ${token}` },
+      payload: {
+        name: 'test-sig-pkg',
+        versions: { '1.0.0': { name: 'test-sig-pkg', version: '1.0.0', dist: { integrity: computeSha512(tarballData) } } },
+        'dist-tags': { latest: '1.0.0' },
+        _attachments: { 'test-sig-pkg-1.0.0.tgz': { content_type: 'application/octet-stream', data: tarballData.toString('base64'), length: tarballData.length } },
+      },
+    });
+
+    // Fetch packument.
+    const resp = await app.inject({
+      method: 'GET',
+      url: '/test-sig-pkg',
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(resp.statusCode).toBe(200);
+    const body = resp.json();
+    const version = body.versions['1.0.0'];
+    expect(version.dist.signatures).toBeTruthy();
+    expect(Object.keys(version.dist.signatures).length).toBeGreaterThan(0);
+  });
+});

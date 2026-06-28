@@ -559,30 +559,30 @@ Definition of done:
 
 ### 9.1 Key management
 
-- [ ] Generate local dev ECDSA P-256 signing key.
-- [ ] Store dev key outside source control.
-- [ ] Implement key ID calculation.
-- [ ] Implement `GET /-/npm/v1/keys`.
-- [ ] Add key rotation data model placeholder.
+- [x] Generate local dev ECDSA P-256 signing key.
+- [x] Store dev key outside source control.
+- [x] Implement key ID calculation.
+- [x] Implement `GET /-/npm/v1/keys`.
+- [x] Add key rotation data model placeholder.
 
 ### 9.2 Sign dist metadata
 
-- [ ] Implement signing payload as package name, version, publish ID, and tarball integrity.
+- [x] Implement signing payload as package name, version, publish ID, and tarball integrity.
 - [ ] Store signature with package version.
-- [ ] Include signature in packument `dist.signatures`.
-- [ ] Add tests for signature creation.
-- [ ] Add tests for signature verification.
+- [x] Include signature in packument `dist.signatures`.
+- [x] Add tests for signature creation.
+- [x] Add tests for signature verification.
 
 ### 9.3 CLI verification
 
-- [ ] Implement verification helper for registry signatures.
+- [x] Implement verification helper for registry signatures.
 - [ ] In `safe-npm install` preflight, verify signatures when registry has keys.
 - [ ] Add blocker on missing signature if registry advertises signatures and policy requires it.
 
 Definition of done:
 
-- [ ] Local registry exposes keys.
-- [ ] Packuments include signatures.
+- [x] Local registry exposes keys.
+- [x] Packuments include signatures.
 - [ ] CLI can verify signatures before install/exec.
 
 ---

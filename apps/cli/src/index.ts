@@ -4,3 +4,4 @@ export { parseArgs, CliError, defaultRegistryUrl, type GlobalFlags, type ParsedA
 export { runPreflight, PreflightError, type PreflightOptions, type PreflightResult } from './preflight.js';
 export { packAndAnalyze, cleanupPack, PackError, type PackResult, type PackOptions } from './pack.js';
 export { publishTarball, PublishError, type PublishOptions, type PublishResult } from './publish.js';
+export { fetchRegistryKeys, verifySignature, canonicalizePayload, SignatureError, type SigningPayload, type DistSignature, type RegistryKeysResponse } from './verify-signature.js';

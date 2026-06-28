@@ -18,11 +18,14 @@ import { writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { requireScopes, SCOPES } from './auth.js';
+import type { KeyManager } from './keys.js';
+import { signDistMetadata } from './signing.js';
 
 export interface RegistryRoutesOptions {
   db: DbClient;
   objectStore: ObjectStore;
   registryBaseUrl: string;
+  keyManager?: KeyManager;
 }
 
 export async function registerRegistryRoutes(
@@ -30,6 +33,7 @@ export async function registerRegistryRoutes(
   options: RegistryRoutesOptions,
 ): Promise<void> {
   const { db, objectStore, registryBaseUrl } = options;
+  const keyManager = options.keyManager;
 
   // --- 8.2: Publish API ---
 
@@ -215,15 +219,35 @@ export async function registerRegistryRoutes(
     const versionsMap: Record<string, unknown> = {};
     for (const v of visibleVersions) {
       const meta = v.metadata as Record<string, unknown>;
+      const dist: Record<string, unknown> = {
+        tarball: `${registryBaseUrl}/${name}/-/${name}-${v.version}.tgz`,
+        integrity: v.tarballSha512,
+        shasum: v.tarballShasum,
+        unpackedSize: v.unpackedSizeBytes,
+        fileCount: v.fileCount,
+      };
+
+      // Include signature if key manager is configured (design 9.2).
+      if (keyManager) {
+        try {
+          const sig = signDistMetadata(
+            {
+              packageName: name,
+              version: v.version,
+              publishId: v.publishId,
+              tarballIntegrity: v.tarballSha512,
+            },
+            keyManager,
+          );
+          dist.signatures = { [sig.keyId]: sig.signature };
+        } catch {
+          // Signing failure is non-fatal.
+        }
+      }
+
       versionsMap[v.version] = {
         ...meta,
-        dist: {
-          tarball: `${registryBaseUrl}/${name}/-/${name}-${v.version}.tgz`,
-          integrity: v.tarballSha512,
-          shasum: v.tarballShasum,
-          unpackedSize: v.unpackedSizeBytes,
-          fileCount: v.fileCount,
-        },
+        dist,
       };
     }
 
@@ -292,6 +316,22 @@ export async function registerRegistryRoutes(
       reply.status(404);
       return { error: 'tarball object not found', statusCode: 404, requestId: request.id };
     }
+  });
+
+  // --- 9.1: Keys endpoint ---
+
+  app.get('/-/npm/v1/keys', async () => {
+    if (!keyManager) {
+      return { keys: [] };
+    }
+    const publicKeys = keyManager.getPublicKeys();
+    return {
+      keys: publicKeys.map((k) => ({
+        keyid: k.keyId,
+        key: k.publicKeyPem,
+        expires: null,
+      })),
+    };
   });
 }
 

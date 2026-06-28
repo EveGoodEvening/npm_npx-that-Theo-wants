@@ -14,6 +14,7 @@ import { createDb, type DbClient } from '@safe-npm/db';
 import { createObjectStoreFromEnv, type ObjectStore } from '@safe-npm/object-store';
 import { registerAuth } from './auth.js';
 import { registerRegistryRoutes } from './routes.js';
+import { FileKeyManager, InMemoryKeyManager, type KeyManager } from './keys.js';
 
 export interface AppOptions {
   logger?: boolean;
@@ -25,6 +26,8 @@ export interface AppOptions {
   db?: DbClient;
   /** Close db on close. */
   closeDb?: () => Promise<void>;
+  /** Key manager for registry signatures (design 9). */
+  keyManager?: KeyManager;
 }
 
 export interface AppInstance extends FastifyInstance {
@@ -122,10 +125,23 @@ export async function createApp(options: AppOptions = {}): Promise<AppInstance> 
 
   await registerAuth(app, db);
 
-  // --- Registry routes (publish, packument, tarball) ---
+  // --- Registry routes (publish, packument, tarball, keys) ---
 
   const registryBaseUrl = process.env.SAFE_NPM_API_BASE_URL ?? `http://localhost:${process.env.SAFE_NPM_API_PORT ?? 3000}`;
-  await registerRegistryRoutes(app, { db, objectStore, registryBaseUrl });
+
+  // Set up key manager for registry signatures (design 9).
+  let keyManager = options.keyManager;
+  if (!keyManager) {
+    const keyfilePath = process.env.SAFE_NPM_SIGNING_KEY_PATH;
+    if (keyfilePath) {
+      keyManager = await FileKeyManager.create(keyfilePath);
+    } else {
+      // Use in-memory key manager by default (for dev without persisted keys).
+      keyManager = new InMemoryKeyManager();
+    }
+  }
+
+  await registerRegistryRoutes(app, { db, objectStore, registryBaseUrl, keyManager });
 
   // Close db on shutdown.
   app.addHook('onClose', async () => {
