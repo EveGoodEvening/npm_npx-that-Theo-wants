@@ -39,6 +39,11 @@ export async function runSafeNpx(argv: string[]): Promise<void> {
       return;
     }
 
+    if (command === 'policy') {
+      await runPolicyCommand(positional, flags, exit);
+      return;
+    }
+
     // No subcommand: treat the whole thing as a package spec to execute.
     // Re-parse with the first positional as the package spec.
     if (command) {
@@ -167,6 +172,75 @@ async function runScanSkillCommand(positional: string[], flags: GlobalFlags, exi
   if (anyBlocked) exit(11);
   else if (anyApproval) exit(10);
   else exit(0);
+}
+
+async function runPolicyCommand(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const subcommand = positional[0];
+  if (!subcommand) {
+    output(flags, { error: 'policy requires a subcommand', usage: 'safe-npx policy init|test [args]' });
+    exit(1);
+    return;
+  }
+
+  if (subcommand === 'init') {
+    const presetIdx = positional.indexOf('--preset');
+    const presetName = presetIdx >= 0 ? positional[presetIdx + 1] : 'agent';
+    const { getPreset, listPresets } = await import('@safe-npm/scoring');
+    const preset = getPreset(presetName);
+    if (!preset) {
+      output(flags, { error: `unknown preset: ${presetName}`, available: listPresets() });
+      exit(1);
+      return;
+    }
+    const policyPath = '.safe-npx-policy.json';
+    const { writeFile: writeFileFn } = await import('node:fs/promises');
+    await writeFileFn(policyPath, JSON.stringify(preset, null, 2) + '\n', 'utf8');
+    if (flags.json) {
+      console.log(JSON.stringify({ ok: true, path: policyPath, preset: presetName }));
+    } else {
+      console.log(`Created policy file: ${policyPath} (preset: ${presetName})`);
+    }
+    exit(0);
+    return;
+  }
+
+  if (subcommand === 'test') {
+    const reportPath = positional[1];
+    if (!reportPath) {
+      output(flags, { error: 'policy test requires a risk report file', usage: 'safe-npx policy test <risk-report.json>' });
+      exit(1);
+      return;
+    }
+    const policy = await loadPolicy(flags);
+    if (!policy) {
+      output(flags, { error: 'no policy configured', hint: 'run: safe-npx policy init' });
+      exit(1);
+      return;
+    }
+    const reportContent = await readFile(reportPath, 'utf8');
+    const report = JSON.parse(reportContent);
+    const { evaluatePolicy } = await import('@safe-npm/scoring');
+    const actionIdx = positional.indexOf('--action');
+    const action = (actionIdx >= 0 ? positional[actionIdx + 1] : 'exec') as 'install' | 'exec' | 'publish';
+    const decision = evaluatePolicy(report, action, policy);
+    if (flags.json) {
+      console.log(JSON.stringify(decision, null, 2));
+    } else {
+      console.log(`Decision: ${decision.decision}`);
+      console.log(`Action: ${decision.action}`);
+      if (decision.matchedRules.length > 0) {
+        console.log('Matched rules:');
+        for (const rule of decision.matchedRules) {
+          console.log(`  ${rule.path}: expected ${JSON.stringify(rule.expected)}, got ${JSON.stringify(rule.actual)}`);
+        }
+      }
+    }
+    exit(decision.decision === 'block' ? 11 : decision.decision === 'requires_approval' ? 10 : 0);
+    return;
+  }
+
+  output(flags, { error: `unknown policy subcommand: ${subcommand}` });
+  exit(1);
 }
 
 async function runExec(pkgSpec: string, extraArgs: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {

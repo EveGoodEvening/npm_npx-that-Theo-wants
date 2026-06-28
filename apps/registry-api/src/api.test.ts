@@ -166,6 +166,15 @@ vi.mock('@safe-npm/db', () => {
       refund: vi.fn(async () => {}),
       listLedgerEntries: vi.fn(async () => []),
     })),
+    PolicyRepository: vi.fn().mockImplementation(() => ({
+      getPolicy: vi.fn(async () => null),
+      upsertPolicy: vi.fn(async (scopeType: string, scopeId: string) => {
+        const id = `pol-${++tokenSeq}`;
+        return { id, scopeType, scopeId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      }),
+      listByScopeType: vi.fn(async () => []),
+      deletePolicy: vi.fn(async () => {}),
+    })),
   };
 });
 

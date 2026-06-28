@@ -64,6 +64,9 @@ export async function runSafeNpm(argv: string[]): Promise<void> {
       case 'audit':
         await runAudit(positional, flags, exit);
         return;
+      case 'policy':
+        await runPolicy(positional, flags, exit);
+        return;
       default:
         output(flags, { error: `unknown command: ${command}` });
         exit(1);
@@ -670,6 +673,94 @@ async function promptConfirm(question: string): Promise<boolean> {
       resolve(answer === 'y' || answer === 'yes');
     });
   });
+}
+
+async function runPolicy(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const subcommand = positional[0];
+  if (!subcommand) {
+    output(flags, { error: 'policy requires a subcommand', usage: 'safe-npm policy init|show|test [args]' });
+    exit(1);
+    return;
+  }
+
+  if (subcommand === 'init') {
+    const presetIdx = positional.indexOf('--preset');
+    const presetName = presetIdx >= 0 ? positional[presetIdx + 1] : 'default-human';
+    const { getPreset, listPresets } = await import('@safe-npm/scoring');
+    const preset = getPreset(presetName);
+    if (!preset) {
+      output(flags, { error: `unknown preset: ${presetName}`, available: listPresets() });
+      exit(1);
+      return;
+    }
+    const policyPath = '.safe-npm-policy.json';
+    const { writeFile: writeFileFn } = await import('node:fs/promises');
+    await writeFileFn(policyPath, JSON.stringify(preset, null, 2) + '\n', 'utf8');
+    if (flags.json) {
+      console.log(JSON.stringify({ ok: true, path: policyPath, preset: presetName }));
+    } else {
+      console.log(`Created policy file: ${policyPath} (preset: ${presetName})`);
+    }
+    exit(0);
+    return;
+  }
+
+  if (subcommand === 'show') {
+    const policy = await loadPolicy(flags);
+    if (!policy) {
+      output(flags, { error: 'no policy configured', hint: 'run: safe-npm policy init' });
+      exit(1);
+      return;
+    }
+    if (flags.json) {
+      console.log(JSON.stringify(policy, null, 2));
+    } else {
+      console.log(`Policy: ${policy.name} (mode: ${policy.mode})`);
+      console.log(`Install: minScore=${policy.install.minimumScore}, blockTiers=[${policy.install.blockTiers.join(',')}]`);
+      console.log(`Exec: minScore=${policy.exec.minimumScore}, blockTiers=[${policy.exec.blockTiers.join(',')}]`);
+      console.log(`Publish: defaultVisibility=${policy.publish.defaultVisibility}`);
+    }
+    exit(0);
+    return;
+  }
+
+  if (subcommand === 'test') {
+    const reportPath = positional[1];
+    if (!reportPath) {
+      output(flags, { error: 'policy test requires a risk report file', usage: 'safe-npm policy test <risk-report.json>' });
+      exit(1);
+      return;
+    }
+    const policy = await loadPolicy(flags);
+    if (!policy) {
+      output(flags, { error: 'no policy configured', hint: 'run: safe-npm policy init' });
+      exit(1);
+      return;
+    }
+    const reportContent = await readFile(reportPath, 'utf8');
+    const report = JSON.parse(reportContent);
+    const { evaluatePolicy } = await import('@safe-npm/scoring');
+    const actionIdx = positional.indexOf('--action');
+    const action = (actionIdx >= 0 ? positional[actionIdx + 1] : 'install') as 'install' | 'exec' | 'publish';
+    const decision = evaluatePolicy(report, action, policy);
+    if (flags.json) {
+      console.log(JSON.stringify(decision, null, 2));
+    } else {
+      console.log(`Decision: ${decision.decision}`);
+      console.log(`Action: ${decision.action}`);
+      if (decision.matchedRules.length > 0) {
+        console.log('Matched rules:');
+        for (const rule of decision.matchedRules) {
+          console.log(`  ${rule.path}: expected ${JSON.stringify(rule.expected)}, got ${JSON.stringify(rule.actual)}`);
+        }
+      }
+    }
+    exit(decision.decision === 'block' ? 11 : decision.decision === 'requires_approval' ? 10 : 0);
+    return;
+  }
+
+  output(flags, { error: `unknown policy subcommand: ${subcommand}` });
+  exit(1);
 }
 
 function flagsFromArgv(argv: string[]): GlobalFlags {

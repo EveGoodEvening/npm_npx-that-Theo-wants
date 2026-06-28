@@ -13,6 +13,7 @@ import {
   PackageAclRepository,
   AuditRepository,
   BillingRepository,
+  PolicyRepository,
   type DbClient,
 } from '@safe-npm/db';
 import { ObjectStore, computeSha512 } from '@safe-npm/object-store';
@@ -717,6 +718,58 @@ export async function registerRegistryRoutes(
       return { error: 'attestation not found', statusCode: 404, requestId: request.id };
     }
     return { attestation };
+  });
+
+  // --- 22.1: Policy API ---
+
+  const policyRepo = new PolicyRepository(db);
+
+  // GET /v1/policies/:scope — get policy for a scope.
+  app.get('/v1/policies/:scope', {
+    preHandler: requireScopes(SCOPES.READ),
+  }, async (request, reply) => {
+    const { scope } = request.params as { scope: string };
+    // Scope format: "scopeType:scopeId" (e.g., "user:abc", "org:xyz", "global:default").
+    const [scopeType, scopeId] = scope.split(':');
+    if (!scopeType || !scopeId) {
+      reply.status(400);
+      return { error: 'scope must be in format scopeType:scopeId', statusCode: 400, requestId: request.id };
+    }
+    const policy = await policyRepo.getPolicy(scopeType, scopeId);
+    if (!policy) {
+      reply.status(404);
+      return { error: 'policy not found', statusCode: 404, requestId: request.id };
+    }
+    return { policy };
+  });
+
+  // PUT /v1/policies/:scope — upsert policy for a scope.
+  app.put('/v1/policies/:scope', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { scope } = request.params as { scope: string };
+    const body = request.body as { policy?: unknown };
+    const [scopeType, scopeId] = scope.split(':');
+    if (!scopeType || !scopeId) {
+      reply.status(400);
+      return { error: 'scope must be in format scopeType:scopeId', statusCode: 400, requestId: request.id };
+    }
+    if (!body?.policy) {
+      reply.status(400);
+      return { error: 'policy is required', statusCode: 400, requestId: request.id };
+    }
+
+    // Validate policy with schema.
+    try {
+      const { PolicySet } = await import('@safe-npm/core-types');
+      PolicySet.parse(body.policy);
+    } catch (err) {
+      reply.status(422);
+      return { error: 'invalid policy schema', details: err instanceof Error ? err.message : String(err), statusCode: 422, requestId: request.id };
+    }
+
+    const policy = await policyRepo.upsertPolicy(scopeType, scopeId, body.policy, request.user!.userId);
+    return { ok: true, policyId: policy.id };
   });
 }
 

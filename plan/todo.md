@@ -1166,32 +1166,32 @@ Definition of done:
 
 ### 22.1 Policy storage
 
-- [ ] Add policy set migrations.
-- [ ] Implement `GET /v1/policies/:scope`.
-- [ ] Implement `PUT /v1/policies/:scope`.
-- [ ] Validate policy with schema.
+- [x] Add policy set migrations.
+- [x] Implement `GET /v1/policies/:scope`.
+- [x] Implement `PUT /v1/policies/:scope`.
+- [x] Validate policy with schema.
 - [ ] Audit log policy changes.
 
 ### 22.2 CLI policy commands
 
-- [ ] Implement `safe-npm policy init`.
-- [ ] Implement `safe-npm policy show`.
-- [ ] Implement `safe-npm policy test <risk-report.json>`.
-- [ ] Implement `safe-npx policy init`.
-- [ ] Implement `safe-npx policy test <risk-report.json>`.
+- [x] Implement `safe-npm policy init`.
+- [x] Implement `safe-npm policy show`.
+- [x] Implement `safe-npm policy test <risk-report.json>`.
+- [x] Implement `safe-npx policy init`.
+- [x] Implement `safe-npx policy test <risk-report.json>`.
 
 ### 22.3 Presets
 
-- [ ] Add `relaxed` preset.
-- [ ] Add `default-human` preset.
-- [ ] Add `strict` preset.
-- [ ] Add `agent` preset.
-- [ ] Add `ci` preset.
+- [x] Add `relaxed` preset.
+- [x] Add `default-human` preset.
+- [x] Add `strict` preset.
+- [x] Add `agent` preset.
+- [x] Add `ci` preset.
 
 Definition of done:
 
 - [ ] Policy decisions are reproducible locally and on the server.
-- [ ] Agent policy blocks `latest` and requires exact versions by default.
+- [x] Agent policy blocks `latest` and requires exact versions by default.
 
 ---
 
