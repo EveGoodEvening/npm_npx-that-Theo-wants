@@ -22,50 +22,50 @@ Use the design in `design.md` as the source of truth.
 
 ### 1.1 Create monorepo
 
-- [ ] Initialize a TypeScript monorepo.
-- [ ] Add package manager workspace config.
-- [ ] Create directories:
-  - [ ] `apps/cli`
-  - [ ] `apps/registry-api`
-  - [ ] `apps/web`
-  - [ ] `apps/workers`
-  - [ ] `packages/core-types`
-  - [ ] `packages/npm-compat`
-  - [ ] `packages/analyzer`
-  - [ ] `packages/scoring`
-  - [ ] `packages/auth`
-  - [ ] `packages/storage`
-  - [ ] `packages/audit-providers`
-  - [ ] `packages/sandbox`
-  - [ ] `infra/migrations`
-  - [ ] `infra/docker`
+- [x] Initialize a TypeScript monorepo.
+- [x] Add package manager workspace config.
+- [x] Create directories:
+  - [x] `apps/cli`
+  - [x] `apps/registry-api`
+  - [x] `apps/web`
+  - [x] `apps/workers`
+  - [x] `packages/core-types`
+  - [x] `packages/npm-compat`
+  - [x] `packages/analyzer`
+  - [x] `packages/scoring`
+  - [x] `packages/auth`
+  - [x] `packages/storage`
+  - [x] `packages/audit-providers`
+  - [x] `packages/sandbox`
+  - [x] `infra/migrations`
+  - [x] `infra/docker`
 
 ### 1.2 Tooling
 
-- [ ] Configure TypeScript project references.
-- [ ] Configure ESLint.
-- [ ] Configure Prettier.
-- [ ] Configure unit test runner.
-- [ ] Configure integration test runner.
-- [ ] Configure package build output.
-- [ ] Configure `safe-npm` and `safe-npx` bin entries in `apps/cli/package.json`.
-- [ ] Add a root `check` script that runs typecheck, lint, and tests.
-- [ ] Add CI workflow that runs the root `check` script.
+- [x] Configure TypeScript project references.
+- [x] Configure ESLint.
+- [x] Configure Prettier.
+- [x] Configure unit test runner.
+- [x] Configure integration test runner.
+- [x] Configure package build output.
+- [x] Configure `safe-npm` and `safe-npx` bin entries in `apps/cli/package.json`.
+- [x] Add a root `check` script that runs typecheck, lint, and tests.
+- [x] Add CI workflow that runs the root `check` script.
 
 ### 1.3 Local infrastructure
 
-- [ ] Add `docker-compose.yml` for PostgreSQL, Redis, and MinIO.
-- [ ] Add `.env.example` with local dev values.
-- [ ] Add a config loader package or module.
-- [ ] Add startup validation for required environment variables.
-- [ ] Add local object storage bucket creation script.
-- [ ] Add database migration command.
-- [ ] Add seed command for local test user/org.
+- [x] Add `docker-compose.yml` for PostgreSQL, Redis, and MinIO.
+- [x] Add `.env.example` with local dev values.
+- [x] Add a config loader package or module.
+- [x] Add startup validation for required environment variables.
+- [x] Add local object storage bucket creation script.
+- [x] Add database migration command.
+- [x] Add seed command for local test user/org.
 
 Definition of done:
 
-- [ ] `pnpm install` or chosen equivalent succeeds.
-- [ ] `pnpm check` or chosen equivalent succeeds.
+- [x] `pnpm install` or chosen equivalent succeeds.
+- [x] `pnpm check` or chosen equivalent succeeds.
 - [ ] Local infra starts with one command.
 - [ ] Empty API service can connect to database, Redis, and object storage.
 
@@ -75,55 +75,55 @@ Definition of done:
 
 ### 2.1 Core schema package
 
-- [ ] Create `packages/core-types`.
-- [ ] Add Zod schemas and TypeScript types for:
-  - [ ] `PackageName`
-  - [ ] `PackageVersion`
-  - [ ] `PackageSpec`
-  - [ ] `PublishId`
-  - [ ] `TarballIntegrity`
-  - [ ] `Visibility`
-  - [ ] `VersionStatus`
-  - [ ] `RiskTier`
-  - [ ] `RiskReport`
-  - [ ] `RiskFinding`
-  - [ ] `PermissionReport`
-  - [ ] `PolicySet`
-  - [ ] `PolicyDecision`
-  - [ ] `AuditJob`
-  - [ ] `AuditAttestation`
-  - [ ] `StageRecord`
-  - [ ] `RetractionRecord`
+- [x] Create `packages/core-types`.
+- [x] Add Zod schemas and TypeScript types for:
+  - [x] `PackageName`
+  - [x] `PackageVersion`
+  - [x] `PackageSpec`
+  - [x] `PublishId`
+  - [x] `TarballIntegrity`
+  - [x] `Visibility`
+  - [x] `VersionStatus`
+  - [x] `RiskTier`
+  - [x] `RiskReport`
+  - [x] `RiskFinding`
+  - [x] `PermissionReport`
+  - [x] `PolicySet`
+  - [x] `PolicyDecision`
+  - [x] `AuditJob`
+  - [x] `AuditAttestation`
+  - [x] `StageRecord`
+  - [x] `RetractionRecord`
 
 ### 2.2 JSON compatibility
 
-- [ ] Ensure every schema can parse from JSON.
-- [ ] Ensure every schema serializes to stable JSON.
-- [ ] Add tests for invalid values.
-- [ ] Add tests for backward-compatible optional fields.
+- [x] Ensure every schema can parse from JSON.
+- [x] Ensure every schema serializes to stable JSON.
+- [x] Add tests for invalid values.
+- [x] Add tests for backward-compatible optional fields.
 
 ### 2.3 Error model
 
-- [ ] Define `SafeNpmError` base shape.
-- [ ] Define error codes:
-  - [ ] `PACKAGE_NOT_FOUND`
-  - [ ] `VERSION_NOT_FOUND`
-  - [ ] `TARBALL_INTEGRITY_FAILED`
-  - [ ] `POLICY_BLOCKED`
-  - [ ] `HUMAN_APPROVAL_REQUIRED`
-  - [ ] `AUDIT_REQUIRED`
-  - [ ] `SANDBOX_UNAVAILABLE`
-  - [ ] `RETRACTION_NOT_ELIGIBLE`
-  - [ ] `AUTH_REQUIRED`
-  - [ ] `FORBIDDEN`
-  - [ ] `RATE_LIMITED`
-- [ ] Add `toHttpStatus` mapping.
-- [ ] Add `toCliExitCode` mapping.
+- [x] Define `SafeNpmError` base shape.
+- [x] Define error codes:
+  - [x] `PACKAGE_NOT_FOUND`
+  - [x] `VERSION_NOT_FOUND`
+  - [x] `TARBALL_INTEGRITY_FAILED`
+  - [x] `POLICY_BLOCKED`
+  - [x] `HUMAN_APPROVAL_REQUIRED`
+  - [x] `AUDIT_REQUIRED`
+  - [x] `SANDBOX_UNAVAILABLE`
+  - [x] `RETRACTION_NOT_ELIGIBLE`
+  - [x] `AUTH_REQUIRED`
+  - [x] `FORBIDDEN`
+  - [x] `RATE_LIMITED`
+- [x] Add `toHttpStatus` mapping.
+- [x] Add `toCliExitCode` mapping.
 
 Definition of done:
 
 - [ ] API, CLI, analyzer, and scoring packages import the same schemas.
-- [ ] Error objects include `code`, `message`, `details`, and optional `remediation`.
+- [x] Error objects include `code`, `message`, `details`, and optional `remediation`.
 
 ---
 

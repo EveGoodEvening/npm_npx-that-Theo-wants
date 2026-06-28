@@ -1,0 +1,37 @@
+{
+  "name": "safe-npm-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Compatibility-first package registry and CLI layer (safe-npm / safe-npx).",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=20.10.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './packages/**' run build && pnpm -r --filter './apps/**' run build",
+    "typecheck": "pnpm -r --filter './packages/**' --filter './apps/**' run typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r --filter \"./packages/**\" --filter \"./apps/**\" run test",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run test",
+    "infra:up": "docker compose -f infra/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infra/docker-compose.yml down",
+    "infra:create-bucket": "node infra/scripts/create-bucket.mjs",
+    "db:migrate": "node infra/scripts/migrate.mjs up",
+    "db:migrate:status": "node infra/scripts/migrate.mjs status",
+    "seed": "node infra/scripts/seed.mjs"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.726.0",
+    "@eslint/js": "^9.18.0",
+    "@types/node": "^22.10.0",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.21.0",
+    "vitest": "^2.1.8"
+  }
+}

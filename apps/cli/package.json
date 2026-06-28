@@ -1,0 +1,23 @@
+{
+  "name": "@safe-npm/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "safe-npm": "./dist/bin/safe-npm.js",
+    "safe-npx": "./dist/bin/safe-npx.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@safe-npm/core-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false
+  },
+  "files": [],
+  "references": [
+    { "path": "./packages/core-types" },
+    { "path": "./packages/config" },
+    { "path": "./packages/npm-compat" },
+    { "path": "./packages/analyzer" },
+    { "path": "./packages/scoring" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/storage" },
+    { "path": "./packages/audit-providers" },
+    { "path": "./packages/sandbox" },
+    { "path": "./apps/cli" },
+    { "path": "./apps/registry-api" },
+    { "path": "./apps/web" },
+    { "path": "./apps/workers" }
+  ]
+}
