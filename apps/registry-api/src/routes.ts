@@ -25,6 +25,7 @@ import { tmpdir } from 'node:os';
 import { requireScopes, SCOPES } from './auth.js';
 import type { KeyManager } from './keys.js';
 import { signDistMetadata } from './signing.js';
+import { metrics } from './metrics.js';
 
 export interface RegistryRoutesOptions {
   db: DbClient;
@@ -35,6 +36,8 @@ export interface RegistryRoutesOptions {
   jobQueue?: { enqueue: (type: string, payload: unknown, options?: { idempotencyKey?: string }) => unknown };
   /** Optional npm proxy for public package fallback. */
   npmProxy?: { fetchPackument: (name: string) => Promise<{ body: string; etag?: string; fromCache: boolean }>; fetchTarball: (url: string) => Promise<{ buffer: Buffer; integrity: string }>; mergeRiskSummary: (p: Record<string, unknown>, r: Record<string, unknown>) => Record<string, unknown>; getConfig: () => { enabled: boolean } };
+  /** Optional audit log repository for logging security-relevant actions. */
+  auditLogger?: { log: (entry: { action: string; actorUserId?: string; actorScopes?: string; targetType: string; targetId?: string; packageId?: string; versionId?: string; detail?: Record<string, unknown>; requestId?: string }) => Promise<void> };
 }
 
 export async function registerRegistryRoutes(
@@ -45,6 +48,7 @@ export async function registerRegistryRoutes(
   const keyManager = options.keyManager;
   const jobQueue = options.jobQueue;
   const npmProxy = options.npmProxy;
+  const auditLogger = options.auditLogger;
 
   // --- 8.2: Publish API ---
 
@@ -179,6 +183,21 @@ export async function registerRegistryRoutes(
     } catch {
       // Analysis failure is non-fatal for publish; enqueue for later.
       request.log.warn({ name, version }, 'analysis failed during publish; will be enqueued');
+    }
+
+    // 25.1: Audit log publish.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'publish',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'version',
+        targetId: publishId,
+        packageId: pkg.id,
+        versionId: pv.id,
+        detail: { package: name, version, publishId, visibility },
+        requestId: request.id,
+      });
     }
 
     return {
@@ -475,6 +494,21 @@ export async function registerRegistryRoutes(
       }
     }
 
+    // 25.1: Audit log retraction.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'retract',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'version',
+        targetId: targetVersion.id,
+        packageId: pkg.id,
+        versionId: targetVersion.id,
+        detail: { package: name, version, reason: body.reason, observedInstalls, ageHours },
+        requestId: request.id,
+      });
+    }
+
     return {
       ok: true,
       package: name,
@@ -504,6 +538,20 @@ export async function registerRegistryRoutes(
       packageVersionId: body.packageVersionId,
       createdBy: request.user!.userId,
     });
+
+    // 25.1: Audit log stage create.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'stage_create',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'stage',
+        targetId: stage.id,
+        packageId: body.packageId,
+        versionId: body.packageVersionId,
+        requestId: request.id,
+      });
+    }
 
     return { ok: true, stageId: stage.id, status: stage.status };
   });
@@ -576,6 +624,21 @@ export async function registerRegistryRoutes(
     const packagesRepo = new PackagesRepository(db);
     await packagesRepo.updateVisibility(stage.packageId, 'public');
 
+    // 25.1: Audit log stage approve.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'stage_approve',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'stage',
+        targetId: stageId,
+        packageId: stage.packageId,
+        versionId: stage.packageVersionId,
+        detail: { reviewNotes: body?.reviewNotes },
+        requestId: request.id,
+      });
+    }
+
     return { ok: true, status: 'approved', stageId };
   });
 
@@ -595,6 +658,22 @@ export async function registerRegistryRoutes(
       return { error: 'stage is not pending', statusCode: 409, requestId: request.id };
     }
     await stageRepo.reject(stageId, request.user!.userId, body?.reviewNotes);
+
+    // 25.1: Audit log stage reject.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'stage_reject',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'stage',
+        targetId: stageId,
+        packageId: stage.packageId,
+        versionId: stage.packageVersionId,
+        detail: { reviewNotes: body?.reviewNotes },
+        requestId: request.id,
+      });
+    }
+
     return { ok: true, status: 'rejected', stageId };
   });
 
@@ -637,6 +716,20 @@ export async function registerRegistryRoutes(
       grantedBy: request.user!.userId,
     });
 
+    // 25.1: Audit log share change.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'share_change',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'share',
+        targetId: acl.id,
+        packageId: body.packageId,
+        detail: { principalType: body.principalType, principalId: body.principalId, role: body.role },
+        requestId: request.id,
+      });
+    }
+
     return { ok: true, shareId: acl.id, role: acl.role };
   });
 
@@ -646,6 +739,20 @@ export async function registerRegistryRoutes(
   }, async (request) => {
     const { shareId } = request.params as { shareId: string };
     await aclRepo.revoke(shareId);
+
+    // 25.1: Audit log share revoke.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'share_change',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'share',
+        targetId: shareId,
+        detail: { action: 'revoke' },
+        requestId: request.id,
+      });
+    }
+
     return { ok: true };
   });
 
@@ -738,6 +845,20 @@ export async function registerRegistryRoutes(
       }, { idempotencyKey: body.idempotencyKey });
     }
 
+    // 25.1: Audit log paid audit request.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'paid_audit_request',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'audit_job',
+        targetId: job.id,
+        versionId: version.id,
+        detail: { package: body.package, version: body.version, provider: body.provider, costCents: AUDIT_COST },
+        requestId: request.id,
+      });
+    }
+
     return { auditId: job.id, status: 'pending', cost: AUDIT_COST };
   });
 
@@ -824,6 +945,20 @@ export async function registerRegistryRoutes(
     }
 
     const policy = await policyRepo.upsertPolicy(scopeType, scopeId, body.policy, request.user!.userId);
+
+    // 25.1: Audit log policy change.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'policy_change',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'policy',
+        targetId: `${scopeType}:${scopeId}`,
+        detail: { scopeType, scopeId, policyId: policy.id },
+        requestId: request.id,
+      });
+    }
+
     return { ok: true, policyId: policy.id };
   });
 
@@ -854,7 +989,20 @@ export async function registerRegistryRoutes(
     // Update status to quarantined.
     await versionsRepo.updateStatus(ver.id, 'quarantined');
 
-    // TODO: Audit log quarantine action.
+    // 25.1: Audit log quarantine action.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'admin_quarantine',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'version',
+        targetId: ver.id,
+        packageId: pkg.id,
+        versionId: ver.id,
+        detail: { package: name, version, reason: body?.reason },
+        requestId: request.id,
+      });
+    }
 
     return { ok: true, status: 'quarantined', package: name, version, reason: body?.reason };
   });
@@ -890,7 +1038,20 @@ export async function registerRegistryRoutes(
     const newStatus = pkg.visibility === 'public' ? 'public' : 'private';
     await versionsRepo.updateStatus(ver.id, newStatus);
 
-    // TODO: Audit log unquarantine action.
+    // 25.1: Audit log unquarantine action.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'admin_unquarantine',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'version',
+        targetId: ver.id,
+        packageId: pkg.id,
+        versionId: ver.id,
+        detail: { package: name, version, reason: body?.reason, newStatus },
+        requestId: request.id,
+      });
+    }
 
     return { ok: true, status: newStatus, package: name, version, reason: body?.reason };
   });
@@ -914,6 +1075,20 @@ export async function registerRegistryRoutes(
     // Set package visibility to quarantined to block public promotion.
     await packagesRepo.updateVisibility(pkg.id, 'quarantined');
 
+    // 25.1: Audit log name dispute.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'name_dispute',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'package',
+        targetId: pkg.id,
+        packageId: pkg.id,
+        detail: { package: name, reviewNotes: body?.reviewNotes },
+        requestId: request.id,
+      });
+    }
+
     return { ok: true, status: 'name-dispute', package: name, reviewNotes: body?.reviewNotes };
   });
 
@@ -935,7 +1110,29 @@ export async function registerRegistryRoutes(
     const newVisibility = body?.decision === 'approve' ? 'public' : 'private';
     await packagesRepo.updateVisibility(pkg.id, newVisibility);
 
+    // 25.1: Audit log name dispute resolution.
+    if (auditLogger) {
+      await auditLogger.log({
+        action: 'name_dispute_resolve',
+        actorUserId: request.user?.userId,
+        actorScopes: request.user?.scopes.join(','),
+        targetType: 'package',
+        targetId: pkg.id,
+        packageId: pkg.id,
+        detail: { package: name, decision: body?.decision, reviewNotes: body?.reviewNotes, newVisibility },
+        requestId: request.id,
+      });
+    }
+
     return { ok: true, status: 'resolved', package: name, decision: body?.decision, reviewNotes: body?.reviewNotes };
+  });
+
+  // --- 25.2: Metrics endpoint ---
+
+  app.get('/-/metrics', async (_request, reply) => {
+    // 25.3: Structured JSON logging is handled by Fastify's built-in logger.
+    reply.header('content-type', 'text/plain; version=0.0.4');
+    return metrics.toPrometheus();
   });
 }
 

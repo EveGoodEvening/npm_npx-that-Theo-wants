@@ -495,3 +495,48 @@ export const ledgerEntries = safenpm.table(
     index('le_idem_idx').on(t.idempotencyKey),
   ],
 );
+
+// --- 25.1: Audit logs ---
+
+export const auditLogAction = pgEnum('audit_log_action', [
+  'publish',
+  'stage_create',
+  'stage_approve',
+  'stage_reject',
+  'retract',
+  'deprecate',
+  'share_change',
+  'token_create',
+  'token_revoke',
+  'token_use',
+  'policy_change',
+  'admin_quarantine',
+  'admin_unquarantine',
+  'name_dispute',
+  'name_dispute_resolve',
+  'paid_audit_request',
+  'paid_audit_result',
+]);
+
+export const auditLogs = safenpm.table(
+  'audit_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    action: auditLogAction('action').notNull(),
+    actorUserId: uuid('actor_user_id').references(() => users.id),
+    actorScopes: text('actor_scopes'),
+    targetType: text('target_type').notNull(),
+    targetId: text('target_id'),
+    packageId: uuid('package_id').references(() => packages.id),
+    versionId: uuid('version_id').references(() => packageVersions.id),
+    detail: jsonb('detail'),
+    requestId: text('request_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('al_action_idx').on(t.action),
+    index('al_actor_idx').on(t.actorUserId),
+    index('al_target_idx').on(t.targetType, t.targetId),
+    index('al_created_idx').on(t.createdAt),
+  ],
+);

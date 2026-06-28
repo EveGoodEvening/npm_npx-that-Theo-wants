@@ -1260,20 +1260,21 @@ Definition of done:
 
 ### 25.1 Audit logs
 
-- [ ] Add `audit_logs` migration if not already present.
-- [ ] Log publish.
-- [ ] Log stage create/approve/reject.
-- [ ] Log retraction.
+- [x] Add `audit_logs` migration if not already present.
+- [x] Log publish.
+- [x] Log stage create/approve/reject.
+- [x] Log retraction.
 - [ ] Log deprecation.
-- [ ] Log share changes.
+- [x] Log share changes.
 - [ ] Log token create/revoke/use.
-- [ ] Log policy changes.
-- [ ] Log admin quarantine.
-- [ ] Log paid audit request/result.
+- [x] Log policy changes.
+- [x] Log admin quarantine.
+- [x] Log paid audit request.
+- [ ] Log paid audit result.
 
 ### 25.2 Metrics
 
-- [ ] Add metrics endpoint.
+- [x] Add metrics endpoint.
 - [ ] Track API latency.
 - [ ] Track worker job latency.
 - [ ] Track analysis failures.
@@ -1284,15 +1285,16 @@ Definition of done:
 
 ### 25.3 Logs
 
-- [ ] Use structured JSON logs in API and workers.
-- [ ] Include request ID.
-- [ ] Include user/org ID where authenticated.
-- [ ] Never log tokens.
-- [ ] Never log raw payment data.
+- [x] Use structured JSON logs in API.
+- [ ] Use structured JSON logs in workers.
+- [x] Include request ID.
+- [x] Include user/org ID where authenticated.
+- [x] Never log tokens.
+- [x] Never log raw payment data.
 
 Definition of done:
 
-- [ ] Security-relevant actions can be reconstructed from audit logs.
+- [x] Security-relevant actions can be reconstructed from audit logs.
 - [ ] Metrics show preflight and analysis health.
 
 ---
