@@ -11,6 +11,8 @@ import {
   RiskReportsRepository,
   StageRecordsRepository,
   PackageAclRepository,
+  AuditRepository,
+  BillingRepository,
   type DbClient,
 } from '@safe-npm/db';
 import { ObjectStore, computeSha512 } from '@safe-npm/object-store';
@@ -28,6 +30,8 @@ export interface RegistryRoutesOptions {
   objectStore: ObjectStore;
   registryBaseUrl: string;
   keyManager?: KeyManager;
+  /** Optional job queue for enqueueing audit jobs. */
+  jobQueue?: { enqueue: (type: string, payload: unknown, options?: { idempotencyKey?: string }) => unknown };
 }
 
 export async function registerRegistryRoutes(
@@ -36,6 +40,7 @@ export async function registerRegistryRoutes(
 ): Promise<void> {
   const { db, objectStore, registryBaseUrl } = options;
   const keyManager = options.keyManager;
+  const jobQueue = options.jobQueue;
 
   // --- 8.2: Publish API ---
 
@@ -601,6 +606,117 @@ export async function registerRegistryRoutes(
     }
     const shares = await aclRepo.listByPackage(pkg.id);
     return { shares };
+  });
+
+  // --- 20.1: Audit API ---
+
+  const auditRepo = new AuditRepository(db);
+  const billingRepo = new BillingRepository(db);
+  const AUDIT_COST = 100; // Fake cost in credits.
+
+  // POST /v1/audits — request a paid audit.
+  app.post('/v1/audits', {
+    preHandler: requireScopes(SCOPES.PUBLISH),
+  }, async (request, reply) => {
+    const body = request.body as {
+      package?: string;
+      version?: string;
+      provider?: string;
+      idempotencyKey?: string;
+    };
+
+    if (!body?.package || !body?.version || !body?.provider || !body?.idempotencyKey) {
+      reply.status(400);
+      return { error: 'package, version, provider, and idempotencyKey are required', statusCode: 400, requestId: request.id };
+    }
+
+    // Validate package/version access.
+    const packagesRepo = new PackagesRepository(db);
+    const versionsRepo = new PackageVersionsRepository(db);
+    const pkg = await packagesRepo.findByName(body.package);
+    if (!pkg) {
+      reply.status(404);
+      return { error: 'package not found', statusCode: 404, requestId: request.id };
+    }
+
+    const versions = await versionsRepo.findByPackageAndVersion(pkg.id, body.version);
+    const version = versions[0];
+    if (!version) {
+      reply.status(404);
+      return { error: 'version not found', statusCode: 404, requestId: request.id };
+    }
+
+    // Check idempotency: if a job with this key exists, return it.
+    const existing = await auditRepo.findJobByIdempotencyKey(body.idempotencyKey);
+    if (existing) {
+      return { auditId: existing.id, status: existing.status, existing: true };
+    }
+
+    // Reserve credits.
+    const account = await billingRepo.findOrCreateAccount(request.user!.userId);
+    const reserved = await billingRepo.reserve(account.id, AUDIT_COST, body.idempotencyKey);
+    if (!reserved) {
+      reply.status(402);
+      return { error: 'insufficient credit balance', statusCode: 402, requestId: request.id };
+    }
+
+    // Create audit job.
+    const tarballDigest = version.tarballSha512 ?? 'unknown';
+    const job = await auditRepo.createJob({
+      packageVersionId: version.id,
+      provider: body.provider,
+      idempotencyKey: body.idempotencyKey,
+      tarballDigest,
+      requesterUserId: request.user!.userId,
+      costCents: AUDIT_COST,
+    });
+
+    // Enqueue audit job.
+    if (jobQueue) {
+      jobQueue.enqueue('audit-package', {
+        auditJobId: job.id,
+        packageVersionId: version.id,
+        packageName: body.package,
+        version: body.version,
+        tarballDigest,
+      }, { idempotencyKey: body.idempotencyKey });
+    }
+
+    return { auditId: job.id, status: 'pending', cost: AUDIT_COST };
+  });
+
+  // GET /v1/audits/:auditId — get audit job status.
+  app.get('/v1/audits/:auditId', {
+    preHandler: requireScopes(SCOPES.READ),
+  }, async (request, reply) => {
+    const { auditId } = request.params as { auditId: string };
+    const job = await auditRepo.findJobById(auditId);
+    if (!job) {
+      reply.status(404);
+      return { error: 'audit job not found', statusCode: 404, requestId: request.id };
+    }
+    return {
+      auditId: job.id,
+      status: job.status,
+      provider: job.provider,
+      result: job.result,
+      error: job.error,
+      createdAt: job.createdAt,
+      completedAt: job.completedAt,
+    };
+  });
+
+  // GET /v1/audit-attestations/:digest — get attestation by tarball digest.
+  app.get('/v1/audit-attestations/:digest', {
+    preHandler: requireScopes(SCOPES.READ),
+  }, async (request, reply) => {
+    const { digest } = request.params as { digest: string };
+    const attestation = await auditRepo.findAttestationByDigest(digest);
+    if (!attestation) {
+      reply.status(404);
+      return { error: 'attestation not found', statusCode: 404, requestId: request.id };
+    }
+    return { attestation };
   });
 }
 

@@ -140,6 +140,32 @@ vi.mock('@safe-npm/db', () => {
       findForPrincipal: vi.fn(async () => null),
       checkAccess: vi.fn(async () => false),
     })),
+    AuditRepository: vi.fn().mockImplementation(() => ({
+      createJob: vi.fn(async (data: { packageVersionId: string; provider?: string; idempotencyKey?: string }) => {
+        const id = `audit-${++tokenSeq}`;
+        return { id, ...data, status: 'pending', createdAt: new Date().toISOString() };
+      }),
+      findJobById: vi.fn(async () => null),
+      findJobByIdempotencyKey: vi.fn(async () => null),
+      updateJobStatus: vi.fn(async () => {}),
+      createAttestation: vi.fn(async (data: { auditJobId: string; statementType: string; signature: string }) => {
+        const id = `att-${++tokenSeq}`;
+        return { id, ...data, createdAt: new Date().toISOString() };
+      }),
+      findAttestationByDigest: vi.fn(async () => null),
+      listAttestationsByVersion: vi.fn(async () => []),
+    })),
+    BillingRepository: vi.fn().mockImplementation(() => ({
+      findOrCreateAccount: vi.fn(async (userId: string) => {
+        const id = `acct-${++tokenSeq}`;
+        return { id, userId, creditBalance: 1000, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      }),
+      getBalance: vi.fn(async () => 1000),
+      reserve: vi.fn(async () => true),
+      capture: vi.fn(async () => {}),
+      refund: vi.fn(async () => {}),
+      listLedgerEntries: vi.fn(async () => []),
+    })),
   };
 });
 

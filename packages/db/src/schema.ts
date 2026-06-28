@@ -263,13 +263,25 @@ export const auditJobs = safenpm.table(
     packageVersionId: uuid('package_version_id').notNull().references(() => packageVersions.id),
     requesterUserId: uuid('requester_user_id').references(() => users.id),
     providerId: uuid('provider_id'),
+    provider: text('provider'),
     mode: text('mode').notNull().default('basic'),
     status: text('status').notNull().default('queued'),
+    idempotencyKey: text('idempotency_key'),
+    tarballDigest: text('tarball_digest'),
+    evidenceBundle: jsonb('evidence_bundle'),
+    providerJobId: text('provider_job_id'),
+    error: text('error'),
     costCents: integer('cost_cents'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     result: jsonb('result'),
   },
+  (t) => [
+    index('aj_version_idx').on(t.packageVersionId),
+    index('aj_status_idx').on(t.status),
+    index('aj_idem_idx').on(t.idempotencyKey),
+  ],
 );
 
 export const auditAttestations = safenpm.table(
@@ -278,12 +290,25 @@ export const auditAttestations = safenpm.table(
     id: uuid('id').primaryKey().defaultRandom(),
     auditJobId: uuid('audit_job_id').notNull().references(() => auditJobs.id),
     packageVersionId: uuid('package_version_id').notNull().references(() => packageVersions.id),
+    tarballDigest: text('tarball_digest'),
+    provider: text('provider'),
+    providerVersion: text('provider_version'),
+    judgment: text('judgment'),
+    scoreAdjustment: integer('score_adjustment').default(0),
+    findings: jsonb('findings').default([]),
+    signedAt: timestamp('signed_at', { withTimezone: true }),
     statementType: text('statement_type').notNull(),
     signedPayload: jsonb('signed_payload').notNull(),
     signature: text('signature').notNull(),
+    publicKeyId: text('public_key_id'),
     transparencyLogUrl: text('transparency_log_url'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
+  (t) => [
+    index('aa_version_idx').on(t.packageVersionId),
+    index('aa_digest_idx').on(t.tarballDigest),
+    index('aa_job_idx').on(t.auditJobId),
+  ],
 );
 
 // --- Permission entities (design 7.4) ---
@@ -426,5 +451,47 @@ export const packageAcl = safenpm.table(
   (t) => [
     index('pa_package_idx').on(t.packageId),
     index('pa_principal_idx').on(t.principalType, t.principalId),
+  ],
+);
+
+// --- Payment ledger (Section 20.4) ---
+
+export const billingAccounts = safenpm.table(
+  'billing_accounts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull().references(() => users.id),
+    creditBalance: integer('credit_balance').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('ba_user_idx').on(t.userId),
+  ],
+);
+
+export const ledgerEntryType = pgEnum('ledger_entry_type', [
+  'credit',
+  'debit',
+  'refund',
+  'reserve',
+  'capture',
+]);
+
+export const ledgerEntries = safenpm.table(
+  'ledger_entries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    accountId: uuid('account_id').notNull().references(() => billingAccounts.id),
+    auditJobId: uuid('audit_job_id').references(() => auditJobs.id),
+    type: ledgerEntryType('type').notNull(),
+    amount: integer('amount').notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('le_account_idx').on(t.accountId),
+    index('le_idem_idx').on(t.idempotencyKey),
   ],
 );

@@ -61,6 +61,9 @@ export async function runSafeNpm(argv: string[]): Promise<void> {
       case 'share':
         await runShare(positional, flags, exit);
         return;
+      case 'audit':
+        await runAudit(positional, flags, exit);
+        return;
       default:
         output(flags, { error: `unknown command: ${command}` });
         exit(1);
@@ -560,6 +563,113 @@ async function runShare(positional: string[], flags: GlobalFlags, exit: (code: n
     console.error(`error: ${body.error ?? 'share failed'}`);
   }
   exit(resp.ok ? 0 : 1);
+}
+
+async function runAudit(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const pkgSpec = positional[0];
+  if (!pkgSpec) {
+    output(flags, { error: 'audit requires <pkg>@<version>', usage: 'safe-npm audit <pkg>@<version> --paid [--provider mock-auditor]' });
+    exit(1);
+    return;
+  }
+
+  const isPaid = positional.includes('--paid') || process.argv.slice(2).includes('--paid');
+  if (!isPaid) {
+    output(flags, { error: 'only --paid audits are supported', usage: 'safe-npm audit <pkg>@<version> --paid' });
+    exit(1);
+    return;
+  }
+
+  // Parse pkg@version.
+  const atIdx = pkgSpec.lastIndexOf('@');
+  if (atIdx <= 0) {
+    output(flags, { error: 'audit requires <pkg>@<version> with explicit version' });
+    exit(1);
+    return;
+  }
+  const pkgName = pkgSpec.slice(0, atIdx);
+  const version = pkgSpec.slice(atIdx + 1);
+
+  const providerIdx = positional.indexOf('--provider');
+  const provider = providerIdx >= 0 ? positional[providerIdx + 1] : 'mock-auditor';
+
+  const token = process.env.SAFE_NPM_PUBLISH_TOKEN;
+  if (!token) {
+    output(flags, { error: 'no publish token found (set SAFE_NPM_PUBLISH_TOKEN)' });
+    exit(1);
+    return;
+  }
+
+  const registryUrl = flags.registry ?? defaultRegistryUrl();
+  const idempotencyKey = `audit-${pkgName}-${version}-${provider}-${Date.now()}`;
+
+  // Show cost before submission.
+  const cost = 100; // Fake cost.
+  if (flags.json) {
+    console.log(JSON.stringify({ package: pkgName, version, provider, cost, idempotencyKey }));
+  } else {
+    console.log(`Audit request: ${pkgName}@${version}`);
+    console.log(`Provider: ${provider}`);
+    console.log(`Cost: ${cost} credits`);
+  }
+
+  // Require confirmation unless --yes.
+  if (!flags.yes) {
+    if (flags.agent) {
+      output(flags, { error: 'audit requires --yes in agent mode' });
+      exit(10);
+      return;
+    }
+    if (!flags.json) {
+      const confirmed = await promptConfirm('Proceed with paid audit? [y/N]: ');
+      if (!confirmed) {
+        output(flags, { message: 'declined by user' });
+        exit(0);
+        return;
+      }
+    }
+  }
+
+  // Submit audit request.
+  const resp = await fetch(`${registryUrl}/v1/audits`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      package: pkgName,
+      version,
+      provider,
+      idempotencyKey,
+    }),
+  });
+
+  const body = await resp.json() as Record<string, unknown>;
+  if (flags.json) {
+    console.log(JSON.stringify(body));
+  } else if (resp.ok) {
+    console.log(`Audit submitted: ${body.auditId}`);
+    console.log(`Status: ${body.status}`);
+    console.log(`Check status: safe-npm audit --status ${body.auditId}`);
+  } else {
+    console.error(`error: ${body.error ?? 'audit request failed'}`);
+  }
+  exit(resp.ok ? 0 : 1);
+}
+
+async function promptConfirm(question: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    process.stdout.write(question);
+    let answer = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.resume();
+    process.stdin.once('data', (data) => {
+      answer = data.toString().trim().toLowerCase();
+      process.stdin.pause();
+      resolve(answer === 'y' || answer === 'yes');
+    });
+  });
 }
 
 function flagsFromArgv(argv: string[]): GlobalFlags {

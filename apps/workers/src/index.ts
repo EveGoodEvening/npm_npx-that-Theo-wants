@@ -49,3 +49,5 @@ export * from './types.js';
 export { createAnalyzerWorker } from './analyzer-worker.js';
 export { createScoreWorker } from './score-worker.js';
 export { createSignatureWorker, canonicalizePayload } from './signature-worker.js';
+export { createAuditWorker } from './audit-worker.js';
+export type { AuditJobPayload, AuditWorkerOptions } from './audit-worker.js';

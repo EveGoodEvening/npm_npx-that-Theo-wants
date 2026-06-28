@@ -1066,50 +1066,50 @@ Definition of done:
 
 ### 20.1 Audit schema and API
 
-- [ ] Add audit job migrations.
-- [ ] Add audit attestation migrations.
-- [ ] Implement `POST /v1/audits`.
-- [ ] Implement `GET /v1/audits/:auditId`.
-- [ ] Implement `GET /v1/audit-attestations/:digest`.
-- [ ] Validate package/version access.
-- [ ] Validate idempotency key.
-- [ ] Enqueue audit job.
+- [x] Add audit job migrations.
+- [x] Add audit attestation migrations.
+- [x] Implement `POST /v1/audits`.
+- [x] Implement `GET /v1/audits/:auditId`.
+- [x] Implement `GET /v1/audit-attestations/:digest`.
+- [x] Validate package/version access.
+- [x] Validate idempotency key.
+- [x] Enqueue audit job.
 
 ### 20.2 Mock provider
 
-- [ ] Define provider adapter interface.
-- [ ] Implement mock provider that returns deterministic results from fixtures.
-- [ ] Implement provider public key endpoint for tests.
-- [ ] Implement provider signature creation and verification.
-- [ ] Add tests for valid/invalid signatures.
+- [x] Define provider adapter interface.
+- [x] Implement mock provider that returns deterministic results from fixtures.
+- [x] Implement provider public key endpoint for tests.
+- [x] Implement provider signature creation and verification.
+- [x] Add tests for valid/invalid signatures.
 
 ### 20.3 Audit worker
 
-- [ ] Load package tarball digest and analysis evidence.
-- [ ] Build evidence bundle.
-- [ ] Submit to provider.
-- [ ] Poll or await result.
-- [ ] Verify provider signature.
-- [ ] Store audit job result.
-- [ ] Store signed attestation.
-- [ ] Enqueue score recomputation.
+- [x] Load package tarball digest and analysis evidence.
+- [x] Build evidence bundle.
+- [x] Submit to provider.
+- [x] Poll or await result.
+- [x] Verify provider signature.
+- [x] Store audit job result.
+- [x] Store signed attestation.
+- [x] Enqueue score recomputation.
 
 ### 20.4 Payment ledger stub
 
-- [ ] Add billing account migration.
-- [ ] Add ledger entry migration.
-- [ ] Implement fake credit balance.
-- [ ] Reserve audit cost before provider submission.
-- [ ] Capture or refund after provider result/error.
+- [x] Add billing account migration.
+- [x] Add ledger entry migration.
+- [x] Implement fake credit balance.
+- [x] Reserve audit cost before provider submission.
+- [x] Capture or refund after provider result/error.
 - [ ] Add tests for idempotent charges.
 
 ### 20.5 CLI audit command
 
-- [ ] Implement `safe-npm audit <pkg>@<version> --paid`.
-- [ ] Show cost before submission.
-- [ ] Require confirmation unless `--yes`.
-- [ ] Print audit status.
-- [ ] Support `--json`.
+- [x] Implement `safe-npm audit <pkg>@<version> --paid`.
+- [x] Show cost before submission.
+- [x] Require confirmation unless `--yes`.
+- [x] Print audit status.
+- [x] Support `--json`.
 
 Definition of done:
 

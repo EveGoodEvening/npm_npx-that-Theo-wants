@@ -9,3 +9,4 @@ export * from './name-normalize.js';
 export * from './name-risk.js';
 export * from './events.js';
 export * from './rollups.js';
+export * from './audit-provider.js';
