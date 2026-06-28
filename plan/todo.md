@@ -1028,37 +1028,37 @@ Definition of done:
 
 ### 19.1 Command extraction
 
-- [ ] Implement Markdown code block parser.
-- [ ] Extract shell-like command lines.
-- [ ] Detect commands:
-  - [ ] `npx`
-  - [ ] `npm exec`
-  - [ ] `npm x`
-  - [ ] `pnpm dlx`
-  - [ ] `yarn dlx`
-  - [ ] `bunx`
-- [ ] Parse package spec from each command.
-- [ ] Preserve line number and raw command.
+- [x] Implement Markdown code block parser.
+- [x] Extract shell-like command lines.
+- [x] Detect commands:
+  - [x] `npx`
+  - [x] `npm exec`
+  - [x] `npm x`
+  - [x] `pnpm dlx`
+  - [x] `yarn dlx`
+  - [x] `bunx`
+- [x] Parse package spec from each command.
+- [x] Preserve line number and raw command.
 
 ### 19.2 Preflight integration
 
-- [ ] For each detected package, run preflight.
-- [ ] Deduplicate same package spec.
-- [ ] Return per-command decision.
-- [ ] Do not execute anything.
+- [x] For each detected package, run preflight.
+- [x] Deduplicate same package spec.
+- [x] Return per-command decision.
+- [x] Do not execute anything.
 
 ### 19.3 CLI command
 
-- [ ] Implement `safe-npx scan-skill <path> --json`.
-- [ ] Implement human summary output.
-- [ ] Exit with code `11` if any command is blocked.
-- [ ] Exit with code `10` if any command requires approval and none are blocked.
-- [ ] Exit with code `0` if all pass.
+- [x] Implement `safe-npx scan-skill <path> --json`.
+- [x] Implement human summary output.
+- [x] Exit with code `11` if any command is blocked.
+- [x] Exit with code `10` if any command requires approval and none are blocked.
+- [x] Exit with code `0` if all pass.
 
 Definition of done:
 
-- [ ] Scanner finds `npx some-tool@latest` in a Markdown fixture.
-- [ ] Scanner reports blocked/approval/pass decisions in JSON.
+- [x] Scanner finds `npx some-tool@latest` in a Markdown fixture.
+- [x] Scanner reports blocked/approval/pass decisions in JSON.
 
 ---
 

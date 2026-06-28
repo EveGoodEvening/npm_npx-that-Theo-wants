@@ -4,6 +4,7 @@ import type { PolicySet } from '@safe-npm/core-types';
 import * as readline from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { readFile } from 'node:fs/promises';
+import { scanMarkdownFile, deduplicateCommands, type DetectedCommand } from './skill-scanner.js';
 
 const VERSION = '0.1.0';
 
@@ -30,6 +31,11 @@ export async function runSafeNpx(argv: string[]): Promise<void> {
 
     if (command === 'preflight') {
       await runPreflightCommand(positional, flags, exit);
+      return;
+    }
+
+    if (command === 'scan-skill') {
+      await runScanSkillCommand(positional, flags, exit);
       return;
     }
 
@@ -83,6 +89,84 @@ async function runPreflightCommand(positional: string[], flags: GlobalFlags, exi
     }));
   }
   exit(0);
+}
+
+async function runScanSkillCommand(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const path = positional[0];
+  if (!path) {
+    output(flags, { error: 'scan-skill requires a file path' });
+    exit(1);
+    return;
+  }
+
+  const registryUrl = flags.registry ?? defaultRegistryUrl();
+  const policy = await loadPolicy(flags);
+
+  const scan = await scanMarkdownFile(path);
+  const unique = deduplicateCommands(scan.commands);
+
+  const results: Array<{
+    command: DetectedCommand;
+    decision: 'pass' | 'approval' | 'block';
+    riskReport?: unknown;
+    policyDecision?: unknown;
+    error?: string;
+  }> = [];
+
+  let anyBlocked = false;
+  let anyApproval = false;
+
+  for (const cmd of unique) {
+    try {
+      const result = await runPreflight(cmd.packageSpec, {
+        registryUrl,
+        policy,
+        agent: flags.agent,
+      });
+      let decision: 'pass' | 'approval' | 'block' = 'pass';
+      if (result.policyDecision) {
+        if (result.policyDecision.decision === 'block') {
+          decision = 'block';
+          anyBlocked = true;
+        } else if (result.policyDecision.decision === 'requires_approval') {
+          decision = 'approval';
+          anyApproval = true;
+        }
+      }
+      results.push({
+        command: cmd,
+        decision,
+        riskReport: result.riskReport,
+        policyDecision: result.policyDecision,
+      });
+    } catch (err) {
+      results.push({
+        command: cmd,
+        decision: 'block',
+        error: err instanceof Error ? err.message : String(err),
+      });
+      anyBlocked = true;
+    }
+  }
+
+  if (flags.json) {
+    console.log(JSON.stringify({
+      file: path,
+      results,
+    }, null, 2));
+  } else {
+    console.log(`Scan: ${path}`);
+    console.log(`Found ${scan.commands.length} command(s), ${unique.length} unique package(s)`);
+    for (const r of results) {
+      const c = r.command;
+      console.log(`  [${r.decision.toUpperCase()}] line ${c.line}: ${c.tool} ${c.packageSpec}`);
+      if (r.error) console.log(`    error: ${r.error}`);
+    }
+  }
+
+  if (anyBlocked) exit(11);
+  else if (anyApproval) exit(10);
+  else exit(0);
 }
 
 async function runExec(pkgSpec: string, extraArgs: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
