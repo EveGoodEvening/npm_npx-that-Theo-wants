@@ -24,6 +24,7 @@
     "tar": "^7.4.3"
   },
   "devDependencies": {
+    "@safe-npm/scoring": "workspace:*",
     "@types/semver": "^7.7.1",
     "@types/tar": "^6.1.13",
     "typescript": "^5.7.3",

@@ -1305,34 +1305,34 @@ Definition of done:
 
 Create local fixture tarballs for:
 
-- [ ] benign package with simple bin.
-- [ ] package with `postinstall` script.
-- [ ] package reading `process.env.GITHUB_TOKEN`.
-- [ ] package using `child_process.exec`.
-- [ ] package using `https.request`.
-- [ ] package with obfuscated/minified file.
-- [ ] package with `.node` native addon placeholder.
-- [ ] package with `binding.gyp`.
-- [ ] package with ambiguous bins.
-- [ ] typosquat-like package name.
+- [x] benign package with simple bin.
+- [x] package with `postinstall` script.
+- [x] package reading `process.env.GITHUB_TOKEN`.
+- [x] package using `child_process.exec`.
+- [x] package using `https.request`.
+- [x] package with obfuscated/minified file.
+- [x] package with `.node` native addon placeholder.
+- [x] package with `binding.gyp`.
+- [x] package with ambiguous bins.
+- [x] typosquat-like package name.
 - [ ] malicious tar path traversal.
 - [ ] integrity mismatch fixture.
 
 ### 26.2 Analyzer tests
 
-- [ ] Analyzer flags each malicious/suspicious fixture.
-- [ ] Analyzer does not execute fixture code.
-- [ ] Analyzer records evidence file paths.
-- [ ] Analyzer handles parse failures gracefully.
+- [x] Analyzer flags each malicious/suspicious fixture.
+- [x] Analyzer does not execute fixture code.
+- [x] Analyzer records evidence file paths.
+- [x] Analyzer handles parse failures gracefully.
 
 ### 26.3 Policy tests
 
-- [ ] Strict policy blocks install scripts.
-- [ ] Strict policy blocks native binaries.
-- [ ] Agent policy requires exact version.
-- [ ] Agent policy blocks `latest`.
-- [ ] Human policy prompts for caution tier.
-- [ ] Blocker always blocks.
+- [x] Strict policy blocks install scripts.
+- [x] Strict policy blocks native binaries.
+- [x] Agent policy requires exact version.
+- [x] Agent policy blocks `latest`.
+- [x] Human policy prompts for caution tier.
+- [x] Blocker always blocks.
 
 ### 26.4 Registry tests
 
@@ -1353,7 +1353,7 @@ Create local fixture tarballs for:
 
 Definition of done:
 
-- [ ] Security test suite fails if any preflight executes fixture package code.
+- [x] Security test suite fails if any preflight executes fixture package code.
 
 ---
 

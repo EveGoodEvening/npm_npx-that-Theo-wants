@@ -108,3 +108,4 @@ export * from './readability.js';
 export * from './diff-version.js';
 export * from './diff.js';
 export * from './diff-risk.js';
+export * from './fixtures.js';
