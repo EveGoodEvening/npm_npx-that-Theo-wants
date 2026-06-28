@@ -1361,36 +1361,36 @@ Definition of done:
 
 ### 27.1 Developer docs
 
-- [ ] Write local setup guide.
-- [ ] Write architecture overview.
+- [x] Write local setup guide.
+- [x] Write architecture overview.
 - [ ] Write API docs from OpenAPI.
-- [ ] Write CLI command reference.
-- [ ] Write analyzer rule documentation.
-- [ ] Write scoring formula documentation.
-- [ ] Write policy schema documentation.
+- [x] Write CLI command reference.
+- [x] Write analyzer rule documentation.
+- [x] Write scoring formula documentation.
+- [x] Write policy schema documentation.
 
 ### 27.2 User docs
 
-- [ ] Write `safe-npm publish` private-first guide.
-- [ ] Write public promotion guide.
-- [ ] Write threshold retraction guide.
-- [ ] Write `safe-npx` risk card guide.
-- [ ] Write agent/CI JSON mode guide.
-- [ ] Write private sharing guide.
-- [ ] Write paid audit guide.
+- [x] Write `safe-npm publish` private-first guide.
+- [x] Write public promotion guide.
+- [x] Write threshold retraction guide.
+- [x] Write `safe-npx` risk card guide.
+- [x] Write agent/CI JSON mode guide.
+- [x] Write private sharing guide.
+- [x] Write paid audit guide.
 
 ### 27.3 Security docs
 
-- [ ] Document threat model.
-- [ ] Document sandbox limitations.
-- [ ] Document install count privacy.
-- [ ] Document semver reuse and lockfile safety.
-- [ ] Document false positive override process.
+- [x] Document threat model.
+- [x] Document sandbox limitations.
+- [x] Document install count privacy.
+- [x] Document semver reuse and lockfile safety.
+- [x] Document false positive override process.
 
 Definition of done:
 
-- [ ] A new coding agent can run the project locally using docs only.
-- [ ] A user can publish private, stage public, retract eligible, and run `safe-npx` using docs only.
+- [x] A new coding agent can run the project locally using docs only.
+- [x] A user can publish private, stage public, retract eligible, and run `safe-npx` using docs only.
 
 ---
 
