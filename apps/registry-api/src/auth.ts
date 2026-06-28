@@ -14,6 +14,8 @@ export interface AuthUser {
   userId: string;
   username: string;
   scopes: string[];
+  /** Whether the user has completed strong auth (design 16.1). */
+  strongAuthAt?: string;
 }
 
 declare module 'fastify' {
@@ -56,6 +58,7 @@ export class AuthService {
       userId: user.id,
       username: user.username,
       scopes: (token.scopes as string[]) ?? [],
+      strongAuthAt: token.strongAuthAt ? token.strongAuthAt.toISOString() : undefined,
     };
   }
 
@@ -121,6 +124,22 @@ export async function registerAuth(app: FastifyInstance, db: DbClient): Promise<
     return { error: 'invalid credentials', statusCode: 401 };
   });
 
+  // Dev-only endpoint to simulate strong auth (design 16.1).
+  // In production, this would be replaced by WebAuthn/passkey verification.
+  app.post('/v1/auth/strong', {
+    preHandler: requireScopes(SCOPES.READ),
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.user) {
+      reply.status(401);
+      return { error: 'authentication required', statusCode: 401 };
+    }
+    // Mark the current session as strongly authenticated.
+    // In dev mode, we just set the timestamp.
+    request.user.strongAuthAt = new Date().toISOString();
+    // TODO: In production, integrate WebAuthn/passkeys.
+    return { ok: true, strongAuthAt: request.user.strongAuthAt };
+  });
+
   // Bearer token auth hook — runs on all /v1/* routes except /v1/auth/*.
   // For packument/tarball routes (/:name), auth is optional (public packages
   // don't require it), but if a token is present we validate and populate
@@ -183,6 +202,29 @@ export function requireScopes(...requiredScopes: string[]) {
     if (!hasScope) {
       reply.status(403);
       return reply.send({ error: 'insufficient permissions', statusCode: 403, requestId: request.id });
+    }
+  };
+}
+
+/**
+ * Require strong auth (design 16.1).
+ * Used for human-sensitive operations: public approval, retraction,
+ * token creation, package access changes.
+ */
+export function requireStrongAuth() {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!request.user) {
+      reply.status(401);
+      return reply.send({ error: 'authentication required', statusCode: 401, requestId: request.id });
+    }
+    if (!request.user.strongAuthAt) {
+      reply.status(403);
+      return reply.send({
+        error: 'strong authentication required',
+        statusCode: 403,
+        requestId: request.id,
+        // TODO: integrate WebAuthn/passkeys in production.
+      });
     }
   };
 }

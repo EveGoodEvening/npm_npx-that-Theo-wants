@@ -93,6 +93,9 @@ importers:
       '@safe-npm/scoring':
         specifier: workspace:*
         version: link:../../packages/scoring
+      drizzle-orm:
+        specifier: ^0.38.4
+        version: 0.38.4(postgres@3.4.9)
       fastify:
         specifier: ^5.2.1
         version: 5.8.5

@@ -328,6 +328,16 @@ export const authTokens = safenpm.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
+    /** Strong auth marker (design 16.1). Set when user completes WebAuthn/passkey. */
+    strongAuthAt: timestamp('strong_auth_at', { withTimezone: true }),
+    /** Token owner org (design 16.2). */
+    ownerOrgId: uuid('owner_org_id').references(() => orgs.id),
+    /** Package allowlist (design 16.2). */
+    packageAllowlist: jsonb('package_allowlist').notNull().default([]),
+    /** Command allowlist (design 16.2). */
+    commandAllowlist: jsonb('command_allowlist').notNull().default([]),
+    /** Revocation timestamp (design 16.2). */
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
   },
   (t) => [
     index('at_user_idx').on(t.userId),
@@ -363,5 +373,25 @@ export const stageRecords = safenpm.table(
     index('sr_package_idx').on(t.packageId),
     index('sr_version_idx').on(t.packageVersionId),
     index('sr_status_idx').on(t.status),
+  ],
+);
+
+// --- Trusted publishers (Section 16.3) ---
+
+export const trustedPublishers = safenpm.table(
+  'trusted_publishers',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    packageId: uuid('package_id').references(() => packages.id),
+    provider: text('provider').notNull(), // e.g. 'github-actions', 'gitlab-ci'
+    repository: text('repository').notNull(), // e.g. 'owner/repo'
+    workflow: text('workflow'), // e.g. 'publish.yml'
+    environment: text('environment'), // e.g. 'production'
+    allowedActions: jsonb('allowed_actions').notNull().default([]), // e.g. ['publish', 'stage']
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('tp_package_idx').on(t.packageId),
+    index('tp_provider_repo_idx').on(t.provider, t.repository),
   ],
 );

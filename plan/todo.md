@@ -886,37 +886,37 @@ Definition of done:
 
 ### 16.1 Strong auth placeholders
 
-- [ ] Add `strong_auth_at` field/session marker.
+- [x] Add `strong_auth_at` field/session marker.
 - [ ] Require strong auth marker for:
   - [ ] public approval
   - [ ] retraction
   - [ ] token creation
   - [ ] package access changes
-- [ ] Implement dev-only endpoint to simulate strong auth.
-- [ ] Add production TODO to integrate WebAuthn/passkeys.
+- [x] Implement dev-only endpoint to simulate strong auth.
+- [x] Add production TODO to integrate WebAuthn/passkeys.
 
 ### 16.2 Scoped tokens
 
 - [ ] Implement token creation API.
-- [ ] Token fields:
-  - [ ] owner user/org
-  - [ ] scopes
-  - [ ] package allowlist
-  - [ ] command allowlist
-  - [ ] expiry
-  - [ ] revoked_at
-- [ ] Store token hash only.
+- [x] Token fields:
+  - [x] owner user/org
+  - [x] scopes
+  - [x] package allowlist
+  - [x] command allowlist
+  - [x] expiry
+  - [x] revoked_at
+- [x] Store token hash only.
 - [ ] Implement token revocation.
 - [ ] Audit log token create/use/revoke.
 
 ### 16.3 OIDC trusted publisher MVP
 
-- [ ] Add `trusted_publishers` table.
-- [ ] Store provider, repository/project, workflow, environment, allowed actions.
-- [ ] Implement OIDC token verification interface.
-- [ ] Add mock OIDC verifier for tests.
+- [x] Add `trusted_publishers` table.
+- [x] Store provider, repository/project, workflow, environment, allowed actions.
+- [x] Implement OIDC token verification interface.
+- [x] Add mock OIDC verifier for tests.
 - [ ] Allow stage/publish when OIDC subject matches trusted publisher config.
-- [ ] Add tests for allowed and denied OIDC subjects.
+- [x] Add tests for allowed and denied OIDC subjects.
 
 Definition of done:
 
