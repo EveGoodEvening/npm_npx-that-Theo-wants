@@ -970,10 +970,10 @@ Definition of done:
 
 ### 18.1 Execution cache
 
-- [ ] Create isolated execution cache path.
-- [ ] Cache by package name, version, tarball digest, and policy hash.
-- [ ] Ensure cache path is not project `node_modules`.
-- [ ] Add cleanup command.
+- [x] Create isolated execution cache path.
+- [x] Cache by package name, version, tarball digest, and policy hash.
+- [x] Ensure cache path is not project `node_modules`.
+- [x] Add cleanup command.
 
 ### 18.2 Install into execution cache
 
@@ -986,15 +986,15 @@ Definition of done:
 
 ### 18.3 Node permission runner
 
-- [ ] Detect whether bin is Node-based:
-  - [ ] shebang contains node
-  - [ ] file extension JS/MJS/CJS
+- [x] Detect whether bin is Node-based:
+  - [x] shebang contains node
+  - [x] file extension JS/MJS/CJS
   - [ ] package bin points to JS file
-- [ ] Implement permission flag builder from permission report.
-- [ ] Support fs read/write allowlists where Node version supports them.
-- [ ] Support child process/worker/native denial where Node version supports them.
-- [ ] Support network permission only when current Node supports it.
-- [ ] If required permission enforcement unavailable, exit code `15`.
+- [x] Implement permission flag builder from permission report.
+- [x] Support fs read/write allowlists where Node version supports them.
+- [x] Support child process/worker/native denial where Node version supports them.
+- [x] Support network permission only when current Node supports it.
+- [x] If required permission enforcement unavailable, exit code `15`.
 
 ### 18.4 Execution
 
@@ -1007,12 +1007,12 @@ Definition of done:
 
 ### 18.5 Trust cache
 
-- [ ] Store local trust decisions by package name, version, tarball digest, and risk report digest.
-- [ ] Support trust scopes:
-  - [ ] once
-  - [ ] exact version
-  - [ ] digest
-  - [ ] package name only, discouraged
+- [x] Store local trust decisions by package name, version, tarball digest, and risk report digest.
+- [x] Support trust scopes:
+  - [x] once
+  - [x] exact version
+  - [x] digest
+  - [x] package name only, discouraged
 - [ ] Implement `safe-npx trust list`.
 - [ ] Implement `safe-npx trust revoke`.
 
