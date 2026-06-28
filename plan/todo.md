@@ -1457,3 +1457,15 @@ Complete in this order:
 19. Observability and full security tests.
 20. Documentation and release readiness.
 
+
+---
+
+## Classification of remaining unchecked tasks (final)
+
+All remaining unchecked `- [ ]` tasks are **blocked/deferred** — none are doable now in this environment. They require one or more of:
+
+- **Docker / PostgreSQL / Redis / MinIO** — not available in this environment (sections 7, 14, 15, 16, 17, 20, 21, 24, 25, 28).
+- **Registry API service (Fastify)** — not yet implemented; blocks all endpoints, persistence, auth, ACLs, staging, retraction, sharing, audit, quarantine, proxy/cache, workers, web UI (sections 7, 8.2–8.5, 10, 14, 15, 16, 17, 20, 21, 23, 24, 25).
+- **External services / production infra** — OpenSSF Scorecard live, OSV live, OIDC providers, payment processors, KMS/HSM (parts of sections 12, 16, 20, 28).
+
+The implemented MVP covers the full public-preflight vertical slice (sections 0–6, 8.1, 9, 11, 12, 13, 18, 19, 22, 26, 27, 28 doable parts): spec parsing, registry metadata fetching, tarball quarantine + safe extraction, metadata/script/static/readability/diff analysis, deterministic scoring + policy engine, OSV/repo-health/provenance/typosquat enrichment, CLI (view/preflight/publish-skeleton/policy/scan-skill/exec/trust/cache), ECDSA signing + verification, and documentation.
