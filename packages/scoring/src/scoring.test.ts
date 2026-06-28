@@ -194,6 +194,13 @@ describe('scoreAnalysis', () => {
     expect(r1.evidenceDigest).toBe(r2.evidenceDigest);
   });
 
+  it('produces deterministic reports for the same input (with fixed generatedAt)', () => {
+    const opts = { generatedAt: '2026-06-28T00:00:00.000Z' };
+    const r1 = scoreAnalysis(makeReport(), opts);
+    const r2 = scoreAnalysis(makeReport(), opts);
+    expect(r1).toEqual(r2);
+  });
+
   it('accepts external blockers and warnings', () => {
     const r = scoreAnalysis(makeReport(), {
       externalBlockers: [

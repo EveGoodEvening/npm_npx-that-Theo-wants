@@ -344,28 +344,28 @@ Definition of done:
 
 ### 5.3 Policy engine MVP
 
-- [ ] Define default human policy.
-- [ ] Define default agent policy.
-- [ ] Implement `evaluatePolicy(riskReport, action, policy)`.
-- [ ] Support actions:
-  - [ ] `install`
-  - [ ] `exec`
-  - [ ] `publish`
-- [ ] Support rules:
-  - [ ] minimum score
-  - [ ] blocked tiers
-  - [ ] require no blockers
-  - [ ] allow/disallow install scripts
-  - [ ] allow/disallow native binaries
-  - [ ] require exact version
-  - [ ] disallow `latest`
-  - [ ] require permission enforcement
-- [ ] Add tests for allow/warn/block/approval-required decisions.
+- [x] Define default human policy.
+- [x] Define default agent policy.
+- [x] Implement `evaluatePolicy(riskReport, action, policy)`.
+- [x] Support actions:
+  - [x] `install`
+  - [x] `exec`
+  - [x] `publish`
+- [x] Support rules:
+  - [x] minimum score
+  - [x] blocked tiers
+  - [x] require no blockers
+  - [x] allow/disallow install scripts
+  - [x] allow/disallow native binaries
+  - [x] require exact version
+  - [x] disallow `latest`
+  - [x] require permission enforcement
+- [x] Add tests for allow/warn/block/approval-required decisions.
 
 Definition of done:
 
-- [ ] Given an analyzer report, scoring produces a deterministic risk report.
-- [ ] Given a risk report and policy, policy engine produces a deterministic decision.
+- [x] Given an analyzer report, scoring produces a deterministic risk report.
+- [x] Given a risk report and policy, policy engine produces a deterministic decision.
 
 ---
 
