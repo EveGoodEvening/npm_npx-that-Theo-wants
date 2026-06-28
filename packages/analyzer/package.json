@@ -1,0 +1,26 @@
+{
+  "name": "@safe-npm/analyzer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@safe-npm/core-types": "*"
+  },
+  "devDependencies": {
+    "@types/tar": "^6.1.13",
+    "acorn": "^8.17.0",
+    "tar": "^7.5.19"
+  }
+}

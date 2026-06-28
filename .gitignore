@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.env
+.env.local
+coverage/
+.nyc_output/
+*.log
+.DS_Store
+# local dev signing key (never commit)
+dev-signing-key.pem
+dev-signing-key.pub.pem

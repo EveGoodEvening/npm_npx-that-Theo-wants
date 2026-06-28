@@ -1,0 +1,27 @@
+{
+  "name": "@safe-npm/npm-compat",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@safe-npm/core-types": "*",
+    "semver": "^7.8.5",
+    "ssri": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/semver": "^7.7.1",
+    "@types/ssri": "^7.1.5"
+  }
+}

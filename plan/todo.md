@@ -8,13 +8,13 @@ Use the design in `design.md` as the source of truth.
 
 ## 0. Ground rules for the coding agent
 
-- [ ] Do not execute untrusted package code while implementing analyzer/preflight tests.
-- [ ] Do not call `npm install <untrusted-package>` as part of preflight. Resolve metadata and download tarballs only.
-- [ ] Do not store real payment credentials. Use fake/test payment provider until production integration is explicitly requested.
-- [ ] Do not create a binary named `npm` or `npx` by default. Use `safe-npm` and `safe-npx`.
-- [ ] Keep every security decision explainable in JSON.
-- [ ] Add tests for each security-sensitive branch before moving to the next feature.
-- [ ] Prefer exact package versions in tests. Avoid `latest` in repeatable tests except when testing tag resolution itself.
+- [x] Do not execute untrusted package code while implementing analyzer/preflight tests.
+- [x] Do not call `npm install <untrusted-package>` as part of preflight. Resolve metadata and download tarballs only.
+- [x] Do not store real payment credentials. Use fake/test payment provider until production integration is explicitly requested.
+- [x] Do not create a binary named `npm` or `npx` by default. Use `safe-npm` and `safe-npx`.
+- [x] Keep every security decision explainable in JSON.
+- [x] Add tests for each security-sensitive branch before moving to the next feature.
+- [x] Prefer exact package versions in tests. Avoid `latest` in repeatable tests except when testing tag resolution itself.
 
 ---
 
@@ -22,52 +22,52 @@ Use the design in `design.md` as the source of truth.
 
 ### 1.1 Create monorepo
 
-- [ ] Initialize a TypeScript monorepo.
-- [ ] Add package manager workspace config.
-- [ ] Create directories:
-  - [ ] `apps/cli`
-  - [ ] `apps/registry-api`
-  - [ ] `apps/web`
-  - [ ] `apps/workers`
-  - [ ] `packages/core-types`
-  - [ ] `packages/npm-compat`
-  - [ ] `packages/analyzer`
-  - [ ] `packages/scoring`
-  - [ ] `packages/auth`
-  - [ ] `packages/storage`
-  - [ ] `packages/audit-providers`
-  - [ ] `packages/sandbox`
-  - [ ] `infra/migrations`
-  - [ ] `infra/docker`
+- [x] Initialize a TypeScript monorepo.
+- [x] Add package manager workspace config.
+- [x] Create directories:
+  - [x] `apps/cli`
+  - [x] `apps/registry-api`
+  - [x] `apps/web`
+  - [x] `apps/workers`
+  - [x] `packages/core-types`
+  - [x] `packages/npm-compat`
+  - [x] `packages/analyzer`
+  - [x] `packages/scoring`
+  - [x] `packages/auth`
+  - [x] `packages/storage`
+  - [x] `packages/audit-providers`
+  - [x] `packages/sandbox`
+  - [x] `infra/migrations`
+  - [x] `infra/docker`
 
 ### 1.2 Tooling
 
-- [ ] Configure TypeScript project references.
-- [ ] Configure ESLint.
-- [ ] Configure Prettier.
-- [ ] Configure unit test runner.
-- [ ] Configure integration test runner.
-- [ ] Configure package build output.
-- [ ] Configure `safe-npm` and `safe-npx` bin entries in `apps/cli/package.json`.
-- [ ] Add a root `check` script that runs typecheck, lint, and tests.
-- [ ] Add CI workflow that runs the root `check` script.
+- [x] Configure TypeScript project references.
+- [x] Configure ESLint.
+- [x] Configure Prettier.
+- [x] Configure unit test runner.
+- [x] Configure integration test runner.
+- [x] Configure package build output.
+- [x] Configure `safe-npm` and `safe-npx` bin entries in `apps/cli/package.json`.
+- [x] Add a root `check` script that runs typecheck, lint, and tests.
+- [x] Add CI workflow that runs the root `check` script.
 
 ### 1.3 Local infrastructure
 
-- [ ] Add `docker-compose.yml` for PostgreSQL, Redis, and MinIO.
-- [ ] Add `.env.example` with local dev values.
-- [ ] Add a config loader package or module.
-- [ ] Add startup validation for required environment variables.
-- [ ] Add local object storage bucket creation script.
-- [ ] Add database migration command.
-- [ ] Add seed command for local test user/org.
+- [x] Add `docker-compose.yml` for PostgreSQL, Redis, and MinIO.
+- [x] Add `.env.example` with local dev values.
+- [x] Add a config loader package or module.
+- [x] Add startup validation for required environment variables.
+- [ ] Add local object storage bucket creation script. <!-- blocked: needs storage/object-store client (section 7.2) -->
+- [ ] Add database migration command. <!-- blocked: needs DB layer (section 7.1) -->
+- [ ] Add seed command for local test user/org. <!-- blocked: needs DB layer (section 7.1) -->
 
 Definition of done:
 
-- [ ] `pnpm install` or chosen equivalent succeeds.
-- [ ] `pnpm check` or chosen equivalent succeeds.
-- [ ] Local infra starts with one command.
-- [ ] Empty API service can connect to database, Redis, and object storage.
+- [x] `pnpm install` or chosen equivalent succeeds.
+- [x] `pnpm check` or chosen equivalent succeeds.
+- [ ] Local infra starts with one command. <!-- blocked: docker unavailable in this environment -->
+- [ ] Empty API service can connect to database, Redis, and object storage. <!-- blocked: needs running infra + API service (section 7) -->
 
 ---
 
@@ -75,55 +75,54 @@ Definition of done:
 
 ### 2.1 Core schema package
 
-- [ ] Create `packages/core-types`.
-- [ ] Add Zod schemas and TypeScript types for:
-  - [ ] `PackageName`
-  - [ ] `PackageVersion`
-  - [ ] `PackageSpec`
-  - [ ] `PublishId`
-  - [ ] `TarballIntegrity`
-  - [ ] `Visibility`
-  - [ ] `VersionStatus`
-  - [ ] `RiskTier`
-  - [ ] `RiskReport`
-  - [ ] `RiskFinding`
-  - [ ] `PermissionReport`
-  - [ ] `PolicySet`
-  - [ ] `PolicyDecision`
-  - [ ] `AuditJob`
-  - [ ] `AuditAttestation`
-  - [ ] `StageRecord`
-  - [ ] `RetractionRecord`
-
+- [x] Create `packages/core-types`.
+- [x] Add Zod schemas and TypeScript types for:
+  - [x] `PackageName`
+  - [x] `PackageVersion`
+  - [x] `PackageSpec`
+  - [x] `PublishId`
+  - [x] `TarballIntegrity`
+  - [x] `Visibility`
+  - [x] `VersionStatus`
+  - [x] `RiskTier`
+  - [x] `RiskReport`
+  - [x] `RiskFinding`
+  - [x] `PermissionReport`
+  - [x] `PolicySet`
+  - [x] `PolicyDecision`
+  - [x] `AuditJob`
+  - [x] `AuditAttestation`
+  - [x] `StageRecord`
+  - [x] `RetractionRecord`
 ### 2.2 JSON compatibility
 
-- [ ] Ensure every schema can parse from JSON.
-- [ ] Ensure every schema serializes to stable JSON.
-- [ ] Add tests for invalid values.
-- [ ] Add tests for backward-compatible optional fields.
+- [x] Ensure every schema can parse from JSON.
+- [x] Ensure every schema serializes to stable JSON.
+- [x] Add tests for invalid values.
+- [x] Add tests for backward-compatible optional fields.
 
 ### 2.3 Error model
 
-- [ ] Define `SafeNpmError` base shape.
-- [ ] Define error codes:
-  - [ ] `PACKAGE_NOT_FOUND`
-  - [ ] `VERSION_NOT_FOUND`
-  - [ ] `TARBALL_INTEGRITY_FAILED`
-  - [ ] `POLICY_BLOCKED`
-  - [ ] `HUMAN_APPROVAL_REQUIRED`
-  - [ ] `AUDIT_REQUIRED`
-  - [ ] `SANDBOX_UNAVAILABLE`
-  - [ ] `RETRACTION_NOT_ELIGIBLE`
-  - [ ] `AUTH_REQUIRED`
-  - [ ] `FORBIDDEN`
-  - [ ] `RATE_LIMITED`
-- [ ] Add `toHttpStatus` mapping.
-- [ ] Add `toCliExitCode` mapping.
+- [x] Define `SafeNpmError` base shape.
+- [x] Define error codes:
+  - [x] `PACKAGE_NOT_FOUND`
+  - [x] `VERSION_NOT_FOUND`
+  - [x] `TARBALL_INTEGRITY_FAILED`
+  - [x] `POLICY_BLOCKED`
+  - [x] `HUMAN_APPROVAL_REQUIRED`
+  - [x] `AUDIT_REQUIRED`
+  - [x] `SANDBOX_UNAVAILABLE`
+  - [x] `RETRACTION_NOT_ELIGIBLE`
+  - [x] `AUTH_REQUIRED`
+  - [x] `FORBIDDEN`
+  - [x] `RATE_LIMITED`
+- [x] Add `toHttpStatus` mapping.
+- [x] Add `toCliExitCode` mapping.
 
 Definition of done:
 
-- [ ] API, CLI, analyzer, and scoring packages import the same schemas.
-- [ ] Error objects include `code`, `message`, `details`, and optional `remediation`.
+- [x] API, CLI, analyzer, and scoring packages import the same schemas.
+- [x] Error objects include `code`, `message`, `details`, and optional `remediation`.
 
 ---
 
@@ -131,57 +130,57 @@ Definition of done:
 
 ### 3.1 Package spec parsing
 
-- [ ] Add dependency on `npm-package-arg` or implement equivalent wrapper.
-- [ ] Implement `parsePackageSpec(input: string)`.
-- [ ] Support:
-  - [ ] unscoped names
-  - [ ] scoped names
-  - [ ] exact versions
-  - [ ] dist-tags
-  - [ ] semver ranges
-- [ ] Reject unsupported sources in strict mode:
-  - [ ] git
-  - [ ] file
-  - [ ] directory
-  - [ ] remote tarball
-- [ ] Add tests for all spec types.
+- [x] Add dependency on `npm-package-arg` or implement equivalent wrapper.
+- [x] Implement `parsePackageSpec(input: string)`.
+- [x] Support:
+  - [x] unscoped names
+  - [x] scoped names
+  - [x] exact versions
+  - [x] dist-tags
+  - [x] semver ranges
+- [x] Reject unsupported sources in strict mode:
+  - [x] git
+  - [x] file
+  - [x] directory
+  - [x] remote tarball
+- [x] Add tests for all spec types.
 
 ### 3.2 Registry metadata fetching
 
-- [ ] Implement `fetchPackument(registryUrl, packageName)`.
-- [ ] Implement ETag/If-None-Match cache support.
-- [ ] Implement `resolveVersion(packument, spec)`.
-- [ ] Implement dist-tag resolution.
-- [ ] Implement semver range resolution.
-- [ ] Add tests using fixture packuments.
+- [x] Implement `fetchPackument(registryUrl, packageName)`.
+- [x] Implement ETag/If-None-Match cache support.
+- [x] Implement `resolveVersion(packument, spec)`.
+- [x] Implement dist-tag resolution.
+- [x] Implement semver range resolution.
+- [x] Add tests using fixture packuments.
 
 ### 3.3 Tarball fetching
 
-- [ ] Implement `downloadTarball(url, destination, expectedIntegrity?)`.
-- [ ] Verify SHA-512 integrity when available.
-- [ ] Verify SHA-1 shasum when SHA-512 is unavailable.
-- [ ] Add timeout and max-size guard.
-- [ ] Add tests for good integrity.
-- [ ] Add tests for integrity mismatch.
-- [ ] Add tests for oversized tarball block.
+- [x] Implement `downloadTarball(url, destination, expectedIntegrity?)`.
+- [x] Verify SHA-512 integrity when available.
+- [x] Verify SHA-1 shasum when SHA-512 is unavailable.
+- [x] Add timeout and max-size guard.
+- [x] Add tests for good integrity.
+- [x] Add tests for integrity mismatch.
+- [x] Add tests for oversized tarball block.
 
 ### 3.4 Packument generation
 
-- [ ] Define internal package/version model to npm packument converter.
-- [ ] Include `dist-tags`.
-- [ ] Include `versions`.
-- [ ] Include `time`.
-- [ ] Include `dist.tarball`.
-- [ ] Include `dist.integrity`.
-- [ ] Include `dist.signatures` when present.
-- [ ] Exclude retracted versions from normal packuments.
-- [ ] Include deprecation warnings for deprecated versions.
-- [ ] Add snapshot tests for generated packuments.
+- [x] Define internal package/version model to npm packument converter.
+- [x] Include `dist-tags`.
+- [x] Include `versions`.
+- [x] Include `time`.
+- [x] Include `dist.tarball`.
+- [x] Include `dist.integrity`.
+- [x] Include `dist.signatures` when present.
+- [x] Exclude retracted versions from normal packuments.
+- [x] Include deprecation warnings for deprecated versions.
+- [x] Add snapshot tests for generated packuments.
 
 Definition of done:
 
-- [ ] The package can resolve and download a public npm tarball without executing code.
-- [ ] The package can generate packuments accepted by `pacote` in tests.
+- [x] The package can resolve and download a public npm tarball without executing code.
+- [ ] The package can generate packuments accepted by `pacote` in tests. <!-- deferred: requires installing pacote + mock registry server; structural packument shape is verified against npm fields -->
 
 ---
 
@@ -189,113 +188,113 @@ Definition of done:
 
 ### 4.1 Quarantine cache
 
-- [ ] Create a local cache directory under OS-specific cache path.
-- [ ] Store tarballs by integrity digest.
-- [ ] Store unpacked contents by integrity digest.
-- [ ] Ensure unpack path is never inside the current project by default.
-- [ ] Add cache lock to prevent concurrent corruption.
-- [ ] Add cache cleanup command.
+- [x] Create a local cache directory under OS-specific cache path.
+- [x] Store tarballs by integrity digest.
+- [x] Store unpacked contents by integrity digest.
+- [x] Ensure unpack path is never inside the current project by default.
+- [x] Add cache lock to prevent concurrent corruption.
+- [x] Add cache cleanup command.
 
 ### 4.2 Safe tar extraction
 
-- [ ] Implement tar extraction that rejects absolute paths.
-- [ ] Reject `..` path traversal.
-- [ ] Reject symlink traversal unless explicitly allowed for analysis metadata only.
-- [ ] Reject hardlink traversal.
-- [ ] Add fixture tests with malicious tar paths.
+- [x] Implement tar extraction that rejects absolute paths.
+- [x] Reject `..` path traversal.
+- [x] Reject symlink traversal unless explicitly allowed for analysis metadata only.
+- [x] Reject hardlink traversal.
+- [x] Add fixture tests with malicious tar paths.
 
 ### 4.3 Metadata analyzer
 
-- [ ] Extract `package.json`.
-- [ ] Validate name/version against resolved package.
-- [ ] Extract fields:
-  - [ ] name
-  - [ ] version
-  - [ ] description
-  - [ ] license
-  - [ ] author
-  - [ ] contributors
-  - [ ] maintainers from packument
-  - [ ] repository
-  - [ ] homepage
-  - [ ] bugs
-  - [ ] main
-  - [ ] exports
-  - [ ] bin
-  - [ ] scripts
-  - [ ] dependencies
-  - [ ] devDependencies
-  - [ ] optionalDependencies
-  - [ ] peerDependencies
-  - [ ] bundledDependencies
-- [ ] Count files.
-- [ ] Compute packed size.
-- [ ] Compute unpacked size.
-- [ ] Detect common binary file types.
-- [ ] Detect `.node` native addons.
-- [ ] Detect `binding.gyp`.
+- [x] Extract `package.json`.
+- [x] Validate name/version against resolved package.
+- [x] Extract fields:
+  - [x] name
+  - [x] version
+  - [x] description
+  - [x] license
+  - [x] author
+  - [x] contributors
+  - [x] maintainers from packument
+  - [x] repository
+  - [x] homepage
+  - [x] bugs
+  - [x] main
+  - [x] exports
+  - [x] bin
+  - [x] scripts
+  - [x] dependencies
+  - [x] devDependencies
+  - [x] optionalDependencies
+  - [x] peerDependencies
+  - [x] bundledDependencies
+- [x] Count files.
+- [x] Compute packed size.
+- [x] Compute unpacked size.
+- [x] Detect common binary file types.
+- [x] Detect `.node` native addons.
+- [x] Detect `binding.gyp`.
 
 ### 4.4 Script analyzer
 
-- [ ] Detect lifecycle scripts:
-  - [ ] `preinstall`
-  - [ ] `install`
-  - [ ] `postinstall`
-  - [ ] `prepare`
-  - [ ] `prepublish`
-  - [ ] `prepublishOnly`
-- [ ] Flag shell metacharacters.
-- [ ] Flag network tools in scripts:
-  - [ ] `curl`
-  - [ ] `wget`
-  - [ ] `nc`
-  - [ ] `ssh`
-  - [ ] `scp`
-- [ ] Flag package manager commands inside install scripts.
-- [ ] Flag `node-gyp` implicit native build when `binding.gyp` is present.
-- [ ] Add tests for package fixtures with and without scripts.
+- [x] Detect lifecycle scripts:
+  - [x] `preinstall`
+  - [x] `install`
+  - [x] `postinstall`
+  - [x] `prepare`
+  - [x] `prepublish`
+  - [x] `prepublishOnly`
+- [x] Flag shell metacharacters.
+- [x] Flag network tools in scripts:
+  - [x] `curl`
+  - [x] `wget`
+  - [x] `nc`
+  - [x] `ssh`
+  - [x] `scp`
+- [x] Flag package manager commands inside install scripts.
+- [x] Flag `node-gyp` implicit native build when `binding.gyp` is present.
+- [x] Add tests for package fixtures with and without scripts.
 
 ### 4.5 Static JS analyzer MVP
 
-- [ ] Parse `.js`, `.mjs`, `.cjs`, `.ts`, and `.tsx` files where feasible.
-- [ ] Do not fail entire analysis when one file cannot parse; emit finding with confidence.
-- [ ] Detect imports/requires of:
-  - [ ] `fs` / `node:fs`
-  - [ ] `child_process` / `node:child_process`
-  - [ ] `http` / `node:http`
-  - [ ] `https` / `node:https`
-  - [ ] `net` / `node:net`
-  - [ ] `dns` / `node:dns`
-  - [ ] `dgram` / `node:dgram`
-  - [ ] `os` / `node:os`
-  - [ ] `crypto` / `node:crypto`
-- [ ] Detect `process.env` access.
-- [ ] Detect common secret names.
-- [ ] Detect `eval`.
-- [ ] Detect `new Function`.
-- [ ] Detect dynamic import with nonliteral argument.
-- [ ] Detect base64 decode followed by eval/function/spawn where obvious.
-- [ ] Add file/line evidence where possible.
+- [x] Parse `.js`, `.mjs`, `.cjs`, `.ts`, and `.tsx` files where feasible. <!-- JS/MJS/CJS parsed via acorn; TS/TSX deferred (requires TS-aware parser) -->
+- [x] Do not fail entire analysis when one file cannot parse; emit finding with confidence.
+- [x] Detect imports/requires of:
+  - [x] `fs` / `node:fs`
+  - [x] `child_process` / `node:child_process`
+  - [x] `http` / `node:http`
+  - [x] `https` / `node:https`
+  - [x] `net` / `node:net`
+  - [x] `dns` / `node:dns`
+  - [x] `dgram` / `node:dgram`
+  - [x] `os` / `node:os`
+  - [x] `crypto` / `node:crypto`
+- [x] Detect `process.env` access.
+- [x] Detect common secret names.
+- [x] Detect `eval`.
+- [x] Detect `new Function`.
+- [x] Detect dynamic import with nonliteral argument.
+- [x] Detect base64 decode followed by eval/function/spawn where obvious.
+- [x] Add file/line evidence where possible.
 
 ### 4.6 Obfuscation/readability MVP
 
-- [ ] Compute minified-line ratio.
-- [ ] Compute average identifier length where AST parse succeeds.
-- [ ] Compute string entropy for long strings.
-- [ ] Flag giant string arrays.
-- [ ] Flag source map availability.
-- [ ] Produce `readability` facts:
-  - [ ] `likelyMinified`
-  - [ ] `likelyObfuscated`
-  - [ ] `sourceMapsPresent`
-  - [ ] `humanReadableFileRatio`
-- [ ] Add tests for minified, obfuscated-like, and normal fixtures.
+- [x] Compute minified-line ratio.
+- [x] Compute average identifier length where AST parse succeeds.
+- [x] Compute string entropy for long strings.
+- [x] Flag giant string arrays.
+- [x] Flag source map availability.
+- [x] Produce `readability` facts:
+  - [x] `likelyMinified`
+  - [x] `likelyObfuscated`
+  - [x] `sourceMapsPresent`
+  - [x] `humanReadableFileRatio`
+- [x] Add tests for minified, obfuscated-like, and normal fixtures.
 
 Definition of done:
 
-- [ ] Analyzer returns a stable `AnalysisReport` for a tarball digest.
-- [ ] Analyzer never executes package code.
-- [ ] Analyzer emits evidence paths for high-severity findings.
+- [x] Analyzer returns a stable `AnalysisReport` for a tarball digest.
+- [x] Analyzer never executes package code.
+- [x] Analyzer emits evidence paths for high-severity findings.
 
 ---
 
@@ -303,69 +302,69 @@ Definition of done:
 
 ### 5.1 Scoring package
 
-- [ ] Create `packages/scoring`.
-- [ ] Implement deterministic `scoreAnalysis(report)`.
-- [ ] Start from score 100.
-- [ ] Deduct for:
-  - [ ] install scripts
-  - [ ] native addons/binaries
-  - [ ] child process usage
-  - [ ] network usage
-  - [ ] env/secret access
-  - [ ] dynamic code execution
-  - [ ] obfuscation/readability issues
-  - [ ] missing repository
-  - [ ] missing license
-  - [ ] package size anomaly placeholder
-- [ ] Add blockers for:
-  - [ ] integrity mismatch
-  - [ ] known malware placeholder flag
-  - [ ] high-confidence exfiltration fixture
-- [ ] Map score to tier.
-- [ ] Compute confidence.
+- [x] Create `packages/scoring`.
+- [x] Implement deterministic `scoreAnalysis(report)`.
+- [x] Start from score 100.
+- [x] Deduct for:
+  - [x] install scripts
+  - [x] native addons/binaries
+  - [x] child process usage
+  - [x] network usage
+  - [x] env/secret access
+  - [x] dynamic code execution
+  - [x] obfuscation/readability issues
+  - [x] missing repository
+  - [x] missing license
+  - [x] package size anomaly placeholder
+- [x] Add blockers for:
+  - [x] integrity mismatch
+  - [x] known malware placeholder flag
+  - [x] high-confidence exfiltration fixture
+- [x] Map score to tier.
+- [x] Compute confidence.
 
 ### 5.2 Risk report renderer
 
-- [ ] Implement JSON renderer.
-- [ ] Implement TTY summary renderer.
-- [ ] Include at minimum:
-  - [ ] package name/version
-  - [ ] tarball size
-  - [ ] unpacked size
-  - [ ] file count
-  - [ ] author/publisher when available
-  - [ ] maintainers when available
-  - [ ] bin command
-  - [ ] install scripts
-  - [ ] score/tier/confidence
-  - [ ] permissions inferred
-  - [ ] warnings/blockers
-- [ ] Add snapshot tests for risk reports.
+- [x] Implement JSON renderer.
+- [x] Implement TTY summary renderer.
+- [x] Include at minimum:
+  - [x] package name/version
+  - [x] tarball size
+  - [x] unpacked size
+  - [x] file count
+  - [x] author/publisher when available
+  - [x] maintainers when available
+  - [x] bin command
+  - [x] install scripts
+  - [x] score/tier/confidence
+  - [x] permissions inferred
+  - [x] warnings/blockers
+- [x] Add snapshot tests for risk reports.
 
 ### 5.3 Policy engine MVP
 
-- [ ] Define default human policy.
-- [ ] Define default agent policy.
-- [ ] Implement `evaluatePolicy(riskReport, action, policy)`.
-- [ ] Support actions:
-  - [ ] `install`
-  - [ ] `exec`
-  - [ ] `publish`
-- [ ] Support rules:
-  - [ ] minimum score
-  - [ ] blocked tiers
-  - [ ] require no blockers
-  - [ ] allow/disallow install scripts
-  - [ ] allow/disallow native binaries
-  - [ ] require exact version
-  - [ ] disallow `latest`
-  - [ ] require permission enforcement
-- [ ] Add tests for allow/warn/block/approval-required decisions.
+- [x] Define default human policy.
+- [x] Define default agent policy.
+- [x] Implement `evaluatePolicy(riskReport, action, policy)`.
+- [x] Support actions:
+  - [x] `install`
+  - [x] `exec`
+  - [x] `publish`
+- [x] Support rules:
+  - [x] minimum score
+  - [x] blocked tiers
+  - [x] require no blockers
+  - [x] allow/disallow install scripts
+  - [x] allow/disallow native binaries
+  - [x] require exact version
+  - [x] disallow `latest`
+  - [x] require permission enforcement
+- [x] Add tests for allow/warn/block/approval-required decisions.
 
 Definition of done:
 
-- [ ] Given an analyzer report, scoring produces a deterministic risk report.
-- [ ] Given a risk report and policy, policy engine produces a deterministic decision.
+- [x] Given an analyzer report, scoring produces a deterministic risk report.
+- [x] Given a risk report and policy, policy engine produces a deterministic decision.
 
 ---
 
@@ -373,59 +372,59 @@ Definition of done:
 
 ### 6.1 CLI scaffold
 
-- [ ] Implement `safe-npm --version`.
-- [ ] Implement `safe-npx --version`.
-- [ ] Implement global flags:
-  - [ ] `--json`
-  - [ ] `--registry <url>`
-  - [ ] `--policy <path>`
-  - [ ] `--agent`
-  - [ ] `--yes`
-  - [ ] `--no`
-  - [ ] `--verbose`
-  - [ ] `--debug`
-- [ ] Implement structured error output for JSON mode.
+- [x] Implement `safe-npm --version`.
+- [x] Implement `safe-npx --version`.
+- [x] Implement global flags:
+  - [x] `--json`
+  - [x] `--registry <url>`
+  - [x] `--policy <path>`
+  - [x] `--agent`
+  - [x] `--yes`
+  - [x] `--no`
+  - [x] `--verbose`
+  - [x] `--debug`
+- [x] Implement structured error output for JSON mode.
 
 ### 6.2 `safe-npm view --risk`
 
-- [ ] Parse package spec.
-- [ ] Fetch packument from registry.
-- [ ] Resolve exact version.
-- [ ] Download tarball to quarantine cache.
-- [ ] Run analyzer.
-- [ ] Run scoring.
-- [ ] Print risk report.
-- [ ] Add `--json` output.
-- [ ] Add tests with mocked registry.
+- [x] Parse package spec.
+- [x] Fetch packument from registry.
+- [x] Resolve exact version.
+- [x] Download tarball to quarantine cache.
+- [x] Run analyzer.
+- [x] Run scoring.
+- [x] Print risk report.
+- [x] Add `--json` output.
+- [x] Add tests with mocked registry.
 
 ### 6.3 `safe-npx preflight`
 
-- [ ] Implement `safe-npx preflight <pkg>[@version]`.
-- [ ] Reuse view-risk pipeline.
-- [ ] Resolve bin name using npm-compatible rules:
-  - [ ] single bin entry
-  - [ ] multiple aliases to same command
-  - [ ] bin matching unscoped package name
-  - [ ] error when ambiguous
-- [ ] Include bin decision in report.
-- [ ] Add JSON output.
-- [ ] Add tests for bin resolution.
+- [x] Implement `safe-npx preflight <pkg>[@version]`.
+- [x] Reuse view-risk pipeline.
+- [x] Resolve bin name using npm-compatible rules:
+  - [x] single bin entry
+  - [x] multiple aliases to same command
+  - [x] bin matching unscoped package name
+  - [x] error when ambiguous
+- [x] Include bin decision in report.
+- [x] Add JSON output.
+- [x] Add tests for bin resolution.
 
 ### 6.4 `safe-npx <pkg>` no-exec prompt
 
-- [ ] Implement command path that preflights first.
-- [ ] If policy blocks, exit with code `11`.
-- [ ] If policy requires approval in agent mode, exit with code `10`.
-- [ ] If policy requires approval in TTY, prompt user.
-- [ ] Support `[y]es`, `[n]o`, `[d]etails`.
-- [ ] Do not execute child package yet. For this step, print `execution would start` after approval.
-- [ ] Add tests for prompt decisions using stdin fixtures.
+- [x] Implement command path that preflights first.
+- [x] If policy blocks, exit with code `11`.
+- [x] If policy requires approval in agent mode, exit with code `10`.
+- [x] If policy requires approval in TTY, prompt user.
+- [x] Support `[y]es`, `[n]o`, `[d]etails`.
+- [x] Do not execute child package yet. For this step, print `execution would start` after approval.
+- [x] Add tests for prompt decisions using stdin fixtures.
 
 Definition of done:
 
-- [ ] `safe-npx preflight is-odd@latest --json` returns valid JSON.
-- [ ] `safe-npm view is-odd --risk` renders a human risk card.
-- [ ] `safe-npx is-odd@latest --agent` exits deterministically based on policy.
+- [x] `safe-npx preflight is-odd@latest --json` returns valid JSON.
+- [x] `safe-npm view is-odd --risk` renders a human risk card.
+- [x] `safe-npx is-odd@latest --agent` exits deterministically based on policy.
 
 ---
 

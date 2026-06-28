@@ -1,0 +1,18 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/core-types" },
+    { "path": "./packages/config" },
+    { "path": "./packages/npm-compat" },
+    { "path": "./packages/analyzer" },
+    { "path": "./packages/scoring" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/storage" },
+    { "path": "./packages/audit-providers" },
+    { "path": "./packages/sandbox" },
+    { "path": "./apps/cli" },
+    { "path": "./apps/registry-api" },
+    { "path": "./apps/web" },
+    { "path": "./apps/workers" }
+  ]
+}
