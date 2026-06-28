@@ -20,6 +20,8 @@
     "semver": "^7.8.5"
   },
   "devDependencies": {
+    "@safe-npm/scoring": "*",
+    "@safe-npm/npm-compat": "*",
     "@types/semver": "^7.7.1",
     "@types/tar": "^6.1.13",
     "acorn": "^8.17.0",

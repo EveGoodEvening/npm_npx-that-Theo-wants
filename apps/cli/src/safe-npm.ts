@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { parseGlobalFlags, viewCommand, policyCommand } from './commands.js';
+import { parseGlobalFlags, viewCommand, policyCommand, publishCommand } from './commands.js';
+
 const args = process.argv.slice(2);
 const { flags, rest } = parseGlobalFlags(args);
-
 const cmd = rest[0];
 const pkgSpec = rest[1];
 
@@ -22,6 +22,10 @@ async function main(): Promise<void> {
   if (cmd === 'policy') {
     const sub = rest[1] ?? '';
     const code = await policyCommand(sub, rest.slice(2), flags);
+    process.exit(code);
+  }
+  if (cmd === 'publish') {
+    const code = await publishCommand(rest.slice(1), flags);
     process.exit(code);
   }
   // For unimplemented commands, print a structured error.

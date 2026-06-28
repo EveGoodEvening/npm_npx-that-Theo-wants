@@ -1,11 +1,16 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { spawn } from 'node:child_process';
 import type { RiskReport, AnalysisReport, PolicyDecision, PolicySet, PolicyAction } from '@safe-npm/core-types';
 import { SafeNpmError, toCliExitCode, PolicySetSchema, RiskReportSchema } from '@safe-npm/core-types';
 import { runPreflight } from './preflight.js';
 import type { PreflightResult } from './preflight.js';
 import { installIntoCache, resolveInstalledBin, executeBin, createExecCache, execCacheKey, buildPermissionFlags, loadTrustCache, isTrusted, addTrustEntry } from './execution.js';
-import { renderTty, DEFAULT_HUMAN_POLICY, DEFAULT_AGENT_POLICY, getPreset, evaluatePolicy } from '@safe-npm/scoring';
+import { renderTty, DEFAULT_HUMAN_POLICY, DEFAULT_AGENT_POLICY, getPreset, evaluatePolicy, scoreAnalysis } from '@safe-npm/scoring';
 import { scanAndPreflight, scanExitCode } from './scan-skill.js';
+import { analyzeTarball } from '@safe-npm/analyzer';
+import { createHash } from 'node:crypto';
 export interface GlobalFlags {
   json: boolean;
   registry?: string;
@@ -382,6 +387,120 @@ export async function policyCommand(
   } catch (err) {
     return handleError(err, flags);
   }
+}
+
+/** `safe-npm publish [--private | --public | --stage-public]` skeleton. */
+export async function publishCommand(args: string[], flags: GlobalFlags): Promise<number> {
+  try {
+    const visibility = args.includes('--public')
+      ? 'public'
+      : args.includes('--stage-public')
+        ? 'staged_public'
+        : 'private'; // default private
+    if (visibility !== 'private' && !flags.yes && !flags.json && !args.includes('--yes')) {
+      getErr(flags)(
+        `publishing as ${visibility} requires explicit intent; use --public/--stage-public with --yes (or --json)\n`,
+      );
+      return 1;
+    }
+
+    // 1. Preview contents with npm pack --json --dry-run.
+    const preview = await runNpmPack(true);
+    if (flags.verbose || !flags.json) {
+      getOut(flags)(`Pack preview: ${Number(preview)} file(s)\n`);
+    }
+
+    // 2. Actual pack: run in project cwd, write tarball into temp dir.
+    const tmp = await mkdtemp(join(tmpdir(), 'safe-publish-'));
+    try {
+      const tarballName = await runNpmPack(false, process.cwd(), tmp);
+      const tarballPath = join(tmp, tarballName);
+      const buf = await readFile(tarballPath);
+      const integrity = `sha512-${createHash('sha512').update(buf).digest('base64')}`;
+      const shasum = createHash('sha1').update(buf).digest('hex');
+
+      // 3. Read package.json for name/version.
+      const pkgJson = JSON.parse(await readFile('package.json', 'utf8')) as {
+        name: string;
+        version: string;
+      };
+
+      // 4. Run local analyzer before upload.
+      const unpackDir = join(tmp, 'unpacked');
+      const { report: analysis, declaredPermissions } = await analyzeTarball({
+        tarballPath,
+        unpackDir,
+        expectedName: pkgJson.name,
+        expectedVersion: pkgJson.version,
+      });
+      const riskReport = scoreAnalysis({ analysis, declaredPermissions });
+
+      // 5. Show local publish summary.
+      const summary = {
+        name: pkgJson.name,
+        version: pkgJson.version,
+        visibility,
+        tarballSizeBytes: buf.byteLength,
+        integrity,
+        shasum,
+        score: riskReport.score,
+        tier: riskReport.tier,
+        blockers: riskReport.blockers.length,
+        warnings: riskReport.warnings.length,
+      };
+      if (flags.json) {
+        getOut(flags)(JSON.stringify({ published: false, summary, note: 'upload not implemented in MVP' }, null, 2) + '\n');
+      } else {
+        getOut(flags)(`Publish summary: ${summary.name}@${summary.version} (${visibility})\n`);
+        getOut(flags)(`  Size: ${buf.byteLength} bytes, integrity: ${integrity.slice(0, 24)}...\n`);
+        getOut(flags)(`  Score: ${summary.score}/100 ${summary.tier}, blockers: ${summary.blockers}, warnings: ${summary.warnings}\n`);
+        getOut(flags)(`  (upload to registry not implemented in MVP; tarball at ${tarballPath})\n`);
+      }
+      return 0;
+    } finally {
+      await rm(tmp, { recursive: true, force: true });
+    }
+  } catch (err) {
+    return handleError(err, flags);
+  }
+}
+
+/** Run `npm pack --json` (dry-run or real) and return the result. */
+async function runNpmPack(dryRun: boolean, cwd?: string, outDir?: string): Promise<string> {
+  const args = ['pack', '--json'];
+  if (dryRun) args.push('--dry-run');
+  if (outDir) args.push('--pack-destination', outDir);
+  return new Promise<string>((resolve, reject) => {
+    const child = spawn('npm', args, {
+      cwd: cwd ?? process.cwd(),
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout?.on('data', (d) => {
+      stdout += d.toString();
+    });
+    child.stderr?.on('data', (d) => {
+      stderr += d.toString();
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`npm pack failed (exit ${code}): ${stderr.slice(-300)}`));
+        return;
+      }
+      try {
+        const parsed = JSON.parse(stdout) as Array<{ filename?: string; files?: unknown[] }>;
+        if (dryRun) {
+          resolve(String(parsed[0]?.files?.length ?? 0));
+        } else {
+          resolve(parsed[0]?.filename ?? '');
+        }
+      } catch {
+        reject(new Error('npm pack returned unparseable JSON'));
+      }
+    });
+  });
 }
 
 function handleError(err: unknown, flags: GlobalFlags): number {

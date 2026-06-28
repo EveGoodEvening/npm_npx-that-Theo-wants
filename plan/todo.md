@@ -493,14 +493,14 @@ Definition of done:
 
 ### 8.1 CLI pack command
 
-- [ ] Implement `safe-npm publish` command skeleton.
-- [ ] Run `npm pack --json --dry-run` or equivalent to preview contents.
-- [ ] Run actual pack into temp directory.
-- [ ] Compute integrity.
-- [ ] Run local analyzer before upload.
-- [ ] Show local publish summary.
-- [ ] Default visibility to `private`.
-- [ ] Require `--public` or `--stage-public` for public intent.
+- [x] Implement `safe-npm publish` command skeleton.
+- [x] Run `npm pack --json --dry-run` or equivalent to preview contents.
+- [x] Run actual pack into temp directory.
+- [x] Compute integrity.
+- [x] Run local analyzer before upload.
+- [x] Show local publish summary.
+- [x] Default visibility to `private`.
+- [x] Require `--public` or `--stage-public` for public intent.
 
 ### 8.2 Publish API
 
@@ -1302,55 +1302,55 @@ Definition of done:
 
 Create local fixture tarballs for:
 
-- [ ] benign package with simple bin.
-- [ ] package with `postinstall` script.
-- [ ] package reading `process.env.GITHUB_TOKEN`.
-- [ ] package using `child_process.exec`.
-- [ ] package using `https.request`.
-- [ ] package with obfuscated/minified file.
-- [ ] package with `.node` native addon placeholder.
-- [ ] package with `binding.gyp`.
-- [ ] package with ambiguous bins.
-- [ ] typosquat-like package name.
-- [ ] malicious tar path traversal.
-- [ ] integrity mismatch fixture.
+- [x] benign package with simple bin.
+- [x] package with `postinstall` script.
+- [x] package reading `process.env.GITHUB_TOKEN`.
+- [x] package using `child_process.exec`.
+- [x] package using `https.request`.
+- [x] package with obfuscated/minified file.
+- [x] package with `.node` native addon placeholder.
+- [x] package with `binding.gyp`.
+- [x] package with ambiguous bins.
+- [x] typosquat-like package name.
+- [x] malicious tar path traversal.
+- [x] integrity mismatch fixture.
 
 ### 26.2 Analyzer tests
 
-- [ ] Analyzer flags each malicious/suspicious fixture.
-- [ ] Analyzer does not execute fixture code.
-- [ ] Analyzer records evidence file paths.
-- [ ] Analyzer handles parse failures gracefully.
+- [x] Analyzer flags each malicious/suspicious fixture.
+- [x] Analyzer does not execute fixture code.
+- [x] Analyzer records evidence file paths.
+- [x] Analyzer handles parse failures gracefully.
 
 ### 26.3 Policy tests
 
-- [ ] Strict policy blocks install scripts.
-- [ ] Strict policy blocks native binaries.
-- [ ] Agent policy requires exact version.
-- [ ] Agent policy blocks `latest`.
-- [ ] Human policy prompts for caution tier.
-- [ ] Blocker always blocks.
+- [x] Strict policy blocks install scripts.
+- [x] Strict policy blocks native binaries.
+- [x] Agent policy requires exact version.
+- [x] Agent policy blocks `latest`.
+- [ ] Human policy prompts for caution tier. <!-- deferred: TTY prompt interaction; caution-tier routing covered by policy engine -->
+- [x] Blocker always blocks.
 
 ### 26.4 Registry tests
 
-- [ ] Private package is invisible to unauthenticated users.
-- [ ] Authorized user can install private package.
-- [ ] Retraction eligibility works below threshold.
-- [ ] Retraction ineligibility works above threshold.
-- [ ] Republish same version uses new publish ID and URL.
-- [ ] Quarantine blocks tarball fetch.
+- [ ] Private package is invisible to unauthenticated users. <!-- blocked: needs registry API (section 7) -->
+- [ ] Authorized user can install private package. <!-- blocked: needs registry API (section 7) -->
+- [ ] Retraction eligibility works below threshold. <!-- blocked: needs registry API (section 14) -->
+- [ ] Retraction ineligibility works above threshold. <!-- blocked: needs registry API (section 14) -->
+- [ ] Republish same version uses new publish ID and URL. <!-- blocked: needs registry API (section 14) -->
+- [ ] Quarantine blocks tarball fetch. <!-- blocked: needs registry API (section 24) -->
 
 ### 26.5 CLI tests
 
-- [ ] `safe-npx preflight` JSON schema valid.
-- [ ] `safe-npx` TTY prompt accepts yes/no/details.
-- [ ] `safe-npx --agent` never prompts.
-- [ ] Exit codes match spec.
-- [ ] `scan-skill` finds commands and returns correct decisions.
+- [x] `safe-npx preflight` JSON schema valid.
+- [x] `safe-npx` TTY prompt accepts yes/no/details.
+- [x] `safe-npx --agent` never prompts.
+- [x] Exit codes match spec.
+- [x] `scan-skill` finds commands and returns correct decisions.
 
 Definition of done:
 
-- [ ] Security test suite fails if any preflight executes fixture package code.
+- [x] Security test suite fails if any preflight executes fixture package code.
 
 ---
 

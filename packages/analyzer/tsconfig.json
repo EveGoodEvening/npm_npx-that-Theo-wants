@@ -2,5 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "outDir": "./dist", "composite": true },
   "include": ["src/**/*", "test/**/*"],
-  "references": [{ "path": "../../packages/core-types" }]
+  "references": [
+    { "path": "../../packages/core-types" },
+    { "path": "../../packages/npm-compat" }
+  ]
 }
