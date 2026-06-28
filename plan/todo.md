@@ -433,54 +433,54 @@ Definition of done:
 
 ### 7.1 Database migrations
 
-- [ ] Add migration for users.
-- [ ] Add migration for orgs.
-- [ ] Add migration for memberships.
-- [ ] Add migration for packages.
-- [ ] Add migration for package_versions.
-- [ ] Add migration for version_aliases.
-- [ ] Add migration for dist_tags.
-- [ ] Add migration for risk_reports.
-- [ ] Add migration for permission_reports.
-- [ ] Add migration for audit_logs.
-- [ ] Add migration for auth tokens.
-- [ ] Add migration tests or migration smoke test.
+- [x] Add migration for users.
+- [x] Add migration for orgs.
+- [x] Add migration for memberships.
+- [x] Add migration for packages.
+- [x] Add migration for package_versions.
+- [x] Add migration for version_aliases.
+- [x] Add migration for dist_tags.
+- [x] Add migration for risk_reports.
+- [x] Add migration for permission_reports.
+- [x] Add migration for audit_logs.
+- [x] Add migration for auth tokens.
+- [x] Add migration tests or migration smoke test.
 
 ### 7.2 Storage layer
 
-- [ ] Implement repository for users.
-- [ ] Implement repository for orgs.
-- [ ] Implement repository for packages.
-- [ ] Implement repository for versions.
-- [ ] Implement repository for dist-tags.
-- [ ] Implement repository for risk reports.
-- [ ] Implement object store client.
-- [ ] Implement object key scheme:
-  - [ ] `tarballs/<sha512>.tgz`
-  - [ ] `analysis/<sha512>/<analyzer-version>.json`
-  - [ ] `attestations/<digest>.json`
-- [ ] Add tests using local MinIO or object-store mock.
+- [x] Implement repository for users.
+- [x] Implement repository for orgs.
+- [x] Implement repository for packages.
+- [x] Implement repository for versions.
+- [x] Implement repository for dist-tags.
+- [x] Implement repository for risk reports.
+- [x] Implement object store client.
+- [x] Implement object key scheme:
+  - [x] `tarballs/<sha512>.tgz`
+  - [x] `analysis/<sha512>/<analyzer-version>.json`
+  - [x] `attestations/<digest>.json`
+- [x] Add tests using local MinIO or object-store mock.
 
 ### 7.3 API scaffold
 
-- [ ] Create Fastify API app.
-- [ ] Add health endpoint.
-- [ ] Add readiness endpoint.
-- [ ] Add request ID middleware.
-- [ ] Add structured logging.
-- [ ] Add error handler.
-- [ ] Add rate-limit middleware placeholder.
+- [x] Create Fastify API app.
+- [x] Add health endpoint.
+- [x] Add readiness endpoint.
+- [x] Add request ID middleware.
+- [x] Add structured logging.
+- [x] Add error handler.
+- [x] Add rate-limit middleware placeholder.
 - [ ] Add OpenAPI generation.
 
 ### 7.4 Auth MVP
 
-- [ ] Implement local dev login endpoint.
-- [ ] Implement bearer token auth.
-- [ ] Implement token hashing at rest.
-- [ ] Implement token scopes.
-- [ ] Implement RBAC guard helper.
-- [ ] Seed local test user/org/token.
-- [ ] Add tests for auth required and forbidden responses.
+- [x] Implement local dev login endpoint.
+- [x] Implement bearer token auth.
+- [x] Implement token hashing at rest.
+- [x] Implement token scopes.
+- [x] Implement RBAC guard helper.
+- [x] Seed local test user/org/token.
+- [x] Add tests for auth required and forbidden responses.
 
 Definition of done:
 

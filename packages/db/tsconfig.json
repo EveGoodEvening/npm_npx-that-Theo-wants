@@ -6,10 +6,8 @@
     "outDir": "./dist"
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "**/*.test.ts"],
+  "exclude": ["dist", "**/*.test.ts", "drizzle.config.ts"],
   "references": [
-    { "path": "../../packages/core-types" },
-    { "path": "../../packages/db" },
-    { "path": "../../packages/object-store" }
+    { "path": "../core-types" }
   ]
 }
