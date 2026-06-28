@@ -303,44 +303,44 @@ Definition of done:
 
 ### 5.1 Scoring package
 
-- [ ] Create `packages/scoring`.
-- [ ] Implement deterministic `scoreAnalysis(report)`.
-- [ ] Start from score 100.
-- [ ] Deduct for:
-  - [ ] install scripts
-  - [ ] native addons/binaries
-  - [ ] child process usage
-  - [ ] network usage
-  - [ ] env/secret access
-  - [ ] dynamic code execution
-  - [ ] obfuscation/readability issues
-  - [ ] missing repository
-  - [ ] missing license
-  - [ ] package size anomaly placeholder
-- [ ] Add blockers for:
+- [x] Create `packages/scoring`.
+- [x] Implement deterministic `scoreAnalysis(report)`.
+- [x] Start from score 100.
+- [x] Deduct for:
+  - [x] install scripts
+  - [x] native addons/binaries
+  - [x] child process usage
+  - [x] network usage
+  - [x] env/secret access
+  - [x] dynamic code execution
+  - [x] obfuscation/readability issues
+  - [x] missing repository
+  - [x] missing license
+  - [x] package size anomaly placeholder
+- [x] Add blockers for:
   - [ ] integrity mismatch
-  - [ ] known malware placeholder flag
-  - [ ] high-confidence exfiltration fixture
-- [ ] Map score to tier.
-- [ ] Compute confidence.
+  - [x] known malware placeholder flag
+  - [x] high-confidence exfiltration fixture
+- [x] Map score to tier.
+- [x] Compute confidence.
 
 ### 5.2 Risk report renderer
 
-- [ ] Implement JSON renderer.
-- [ ] Implement TTY summary renderer.
-- [ ] Include at minimum:
-  - [ ] package name/version
-  - [ ] tarball size
-  - [ ] unpacked size
-  - [ ] file count
-  - [ ] author/publisher when available
-  - [ ] maintainers when available
-  - [ ] bin command
-  - [ ] install scripts
-  - [ ] score/tier/confidence
-  - [ ] permissions inferred
-  - [ ] warnings/blockers
-- [ ] Add snapshot tests for risk reports.
+- [x] Implement JSON renderer.
+- [x] Implement TTY summary renderer.
+- [x] Include at minimum:
+  - [x] package name/version
+  - [x] tarball size
+  - [x] unpacked size
+  - [x] file count
+  - [x] author/publisher when available
+  - [x] maintainers when available
+  - [x] bin command
+  - [x] install scripts
+  - [x] score/tier/confidence
+  - [x] permissions inferred
+  - [x] warnings/blockers
+- [x] Add snapshot tests for risk reports.
 
 ### 5.3 Policy engine MVP
 

@@ -16,6 +16,9 @@
     "typecheck": "tsc -b",
     "test": "vitest run --passWithNoTests"
   },
+  "dependencies": {
+    "@safe-npm/core-types": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"

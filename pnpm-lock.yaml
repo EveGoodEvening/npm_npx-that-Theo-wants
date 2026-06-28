@@ -183,6 +183,10 @@ importers:
         version: 2.1.9(@types/node@22.20.0)
 
   packages/scoring:
+    dependencies:
+      '@safe-npm/core-types':
+        specifier: workspace:*
+        version: link:../core-types
     devDependencies:
       typescript:
         specifier: ^5.7.3
