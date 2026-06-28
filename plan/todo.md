@@ -373,59 +373,59 @@ Definition of done:
 
 ### 6.1 CLI scaffold
 
-- [ ] Implement `safe-npm --version`.
-- [ ] Implement `safe-npx --version`.
-- [ ] Implement global flags:
-  - [ ] `--json`
-  - [ ] `--registry <url>`
-  - [ ] `--policy <path>`
-  - [ ] `--agent`
-  - [ ] `--yes`
-  - [ ] `--no`
-  - [ ] `--verbose`
-  - [ ] `--debug`
-- [ ] Implement structured error output for JSON mode.
+- [x] Implement `safe-npm --version`.
+- [x] Implement `safe-npx --version`.
+- [x] Implement global flags:
+  - [x] `--json`
+  - [x] `--registry <url>`
+  - [x] `--policy <path>`
+  - [x] `--agent`
+  - [x] `--yes`
+  - [x] `--no`
+  - [x] `--verbose`
+  - [x] `--debug`
+- [x] Implement structured error output for JSON mode.
 
 ### 6.2 `safe-npm view --risk`
 
-- [ ] Parse package spec.
-- [ ] Fetch packument from registry.
-- [ ] Resolve exact version.
-- [ ] Download tarball to quarantine cache.
-- [ ] Run analyzer.
-- [ ] Run scoring.
-- [ ] Print risk report.
-- [ ] Add `--json` output.
-- [ ] Add tests with mocked registry.
+- [x] Parse package spec.
+- [x] Fetch packument from registry.
+- [x] Resolve exact version.
+- [x] Download tarball to quarantine cache.
+- [x] Run analyzer.
+- [x] Run scoring.
+- [x] Print risk report.
+- [x] Add `--json` output.
+- [x] Add tests with mocked registry.
 
 ### 6.3 `safe-npx preflight`
 
-- [ ] Implement `safe-npx preflight <pkg>[@version]`.
-- [ ] Reuse view-risk pipeline.
-- [ ] Resolve bin name using npm-compatible rules:
-  - [ ] single bin entry
-  - [ ] multiple aliases to same command
-  - [ ] bin matching unscoped package name
-  - [ ] error when ambiguous
-- [ ] Include bin decision in report.
-- [ ] Add JSON output.
-- [ ] Add tests for bin resolution.
+- [x] Implement `safe-npx preflight <pkg>[@version]`.
+- [x] Reuse view-risk pipeline.
+- [x] Resolve bin name using npm-compatible rules:
+  - [x] single bin entry
+  - [x] multiple aliases to same command
+  - [x] bin matching unscoped package name
+  - [x] error when ambiguous
+- [x] Include bin decision in report.
+- [x] Add JSON output.
+- [x] Add tests for bin resolution.
 
 ### 6.4 `safe-npx <pkg>` no-exec prompt
 
-- [ ] Implement command path that preflights first.
-- [ ] If policy blocks, exit with code `11`.
-- [ ] If policy requires approval in agent mode, exit with code `10`.
-- [ ] If policy requires approval in TTY, prompt user.
-- [ ] Support `[y]es`, `[n]o`, `[d]etails`.
-- [ ] Do not execute child package yet. For this step, print `execution would start` after approval.
-- [ ] Add tests for prompt decisions using stdin fixtures.
+- [x] Implement command path that preflights first.
+- [x] If policy blocks, exit with code `11`.
+- [x] If policy requires approval in agent mode, exit with code `10`.
+- [x] If policy requires approval in TTY, prompt user.
+- [x] Support `[y]es`, `[n]o`, `[d]etails`.
+- [x] Do not execute child package yet. For this step, print `execution would start` after approval.
+- [x] Add tests for prompt decisions using stdin fixtures.
 
 Definition of done:
 
-- [ ] `safe-npx preflight is-odd@latest --json` returns valid JSON.
-- [ ] `safe-npm view is-odd --risk` renders a human risk card.
-- [ ] `safe-npx is-odd@latest --agent` exits deterministically based on policy.
+- [x] `safe-npx preflight is-odd@latest --json` returns valid JSON.
+- [x] `safe-npm view is-odd --risk` renders a human risk card.
+- [x] `safe-npx is-odd@latest --agent` exits deterministically based on policy.
 
 ---
 

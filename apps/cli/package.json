@@ -13,10 +13,15 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@safe-npm/core-types": "workspace:*"
+    "@safe-npm/analyzer": "workspace:*",
+    "@safe-npm/core-types": "workspace:*",
+    "@safe-npm/npm-compat": "workspace:*",
+    "@safe-npm/scoring": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/tar": "^6.1.13",
+    "tar": "^7.4.3",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
   }

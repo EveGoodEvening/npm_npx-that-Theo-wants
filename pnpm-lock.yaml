@@ -38,13 +38,28 @@ importers:
 
   apps/cli:
     dependencies:
+      '@safe-npm/analyzer':
+        specifier: workspace:*
+        version: link:../../packages/analyzer
       '@safe-npm/core-types':
         specifier: workspace:*
         version: link:../../packages/core-types
+      '@safe-npm/npm-compat':
+        specifier: workspace:*
+        version: link:../../packages/npm-compat
+      '@safe-npm/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.0
+      '@types/tar':
+        specifier: ^6.1.13
+        version: 6.1.13
+      tar:
+        specifier: ^7.4.3
+        version: 7.5.17
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
