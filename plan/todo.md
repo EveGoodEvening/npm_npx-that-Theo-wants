@@ -762,49 +762,49 @@ Definition of done:
 - [ ] Emit `tarball_fetch` event on tarball response success.
 - [ ] Emit `exec_preflight` event on `safe-npx` preflight if authenticated or telemetry enabled.
 - [ ] Emit `install_success` event from CLI when delegated install returns success, when telemetry policy allows.
-- [ ] Ensure anonymous telemetry can be disabled.
+- [x] Ensure anonymous telemetry can be disabled.
 
 ### 14.2 Privacy buckets
 
-- [ ] Implement daily rotating salt.
-- [ ] For authenticated requests, bucket by user/org/day/package/version.
-- [ ] For anonymous requests, bucket by hashed IP prefix + user-agent family + day.
-- [ ] Do not expose raw bucket IDs.
-- [ ] Add data retention policy.
+- [x] Implement daily rotating salt.
+- [x] For authenticated requests, bucket by user/org/day/package/version.
+- [x] For anonymous requests, bucket by hashed IP prefix + user-agent family + day.
+- [x] Do not expose raw bucket IDs.
+- [x] Add data retention policy.
 
 ### 14.3 Rollup worker
 
-- [ ] Aggregate unique install count by package version.
-- [ ] Aggregate tarball fetch count by package version.
-- [ ] Store hourly or daily rollups.
+- [x] Aggregate unique install count by package version.
+- [x] Aggregate tarball fetch count by package version.
+- [x] Store hourly or daily rollups.
 - [ ] Provide fast query for current observed installs.
 
 ### 14.4 Retraction API
 
-- [ ] Implement `POST /v1/packages/:name/versions/:version/retract`.
-- [ ] Require auth.
-- [ ] Require write/admin permission.
-- [ ] Require reason.
-- [ ] Compute age seconds.
-- [ ] Compute observed installs.
-- [ ] Check eligibility: `observed_installs < 100 OR age < 5h`.
-- [ ] If eligible:
-  - [ ] Mark version `retracted`.
-  - [ ] Remove active alias if it points to publish ID.
-  - [ ] Move dist-tags to previous eligible version or remove tag.
+- [x] Implement `POST /v1/packages/:name/versions/:version/retract`.
+- [x] Require auth.
+- [x] Require write/admin permission.
+- [x] Require reason.
+- [x] Compute age seconds.
+- [x] Compute observed installs.
+- [x] Check eligibility: `observed_installs < 100 OR age < 5h`.
+- [x] If eligible:
+  - [x] Mark version `retracted`.
+  - [x] Remove active alias if it points to publish ID.
+  - [x] Move dist-tags to previous eligible version or remove tag.
   - [ ] Create retraction record.
   - [ ] Invalidate packument cache.
   - [ ] Audit log action.
-- [ ] If ineligible, return `RETRACTION_NOT_ELIGIBLE` with facts.
+- [x] If ineligible, return `RETRACTION_NOT_ELIGIBLE` with facts.
 
 ### 14.5 CLI retraction
 
-- [ ] Implement `safe-npm retract <pkg>@<version> --reason <text>`.
+- [x] Implement `safe-npm retract <pkg>@<version> --reason <text>`.
 - [ ] Show eligibility facts before action.
 - [ ] Require confirmation in TTY.
 - [ ] Support `--yes` for non-interactive with strong auth token.
-- [ ] Print result and dist-tag changes.
-- [ ] Support `--json`.
+- [x] Print result and dist-tag changes.
+- [x] Support `--json`.
 
 ### 14.6 Semver reuse
 

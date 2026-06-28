@@ -49,6 +49,9 @@ export async function runSafeNpm(argv: string[]): Promise<void> {
       case 'publish':
         await runPublish(positional, flags, exit);
         return;
+      case 'retract':
+        await runRetract(positional, flags, exit);
+        return;
       default:
         output(flags, { error: `unknown command: ${command}` });
         exit(1);
@@ -266,6 +269,77 @@ function readTokenFromNpmrc(): string | undefined {
   // In a real implementation, this would parse .npmrc.
   // For MVP, we only support env var.
   return undefined;
+}
+
+async function runRetract(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const pkgSpec = positional[0];
+  if (!pkgSpec || !pkgSpec.includes('@')) {
+    output(flags, { error: 'retract requires <pkg>@<version>', usage: 'safe-npm retract <pkg>@<version> --reason <text>' });
+    exit(1);
+    return;
+  }
+
+  const reasonIdx = positional.indexOf('--reason');
+  const reason = reasonIdx >= 0 ? positional[reasonIdx + 1] : undefined;
+  if (!reason) {
+    output(flags, { error: 'retract requires --reason <text>' });
+    exit(1);
+    return;
+  }
+
+  const lastAt = pkgSpec.lastIndexOf('@');
+  const name = pkgSpec.slice(0, lastAt);
+  const version = pkgSpec.slice(lastAt + 1);
+
+  const token = process.env.SAFE_NPM_PUBLISH_TOKEN;
+  if (!token) {
+    output(flags, { error: 'no publish token found (set SAFE_NPM_PUBLISH_TOKEN)' });
+    exit(1);
+    return;
+  }
+
+  const registryUrl = flags.registry ?? defaultRegistryUrl();
+  const url = `${registryUrl}/v1/packages/${encodeURIComponent(name).replace('%40', '@')}/versions/${version}/retract`;
+
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ reason }),
+    });
+
+    const body = await resp.json() as Record<string, unknown>;
+
+    if (!resp.ok) {
+      if (flags.json) {
+        console.log(JSON.stringify(body));
+      } else {
+        console.error(`error: ${body.error ?? 'retract failed'}`);
+        if (body.facts) console.error(`facts: ${JSON.stringify(body.facts)}`);
+      }
+      exit(1);
+      return;
+    }
+
+    if (flags.json) {
+      console.log(JSON.stringify(body));
+    } else {
+      console.log(`retracted ${name}@${version}: ${body.status}`);
+      console.log(`reason: ${reason}`);
+      if (body.facts) console.log(`facts: ${JSON.stringify(body.facts)}`);
+    }
+    exit(0);
+  } catch (err) {
+    if (err instanceof Error) {
+      output(flags, { error: err.message });
+    } else {
+      output(flags, { error: 'retract failed' });
+    }
+    exit(1);
+  }
 }
 
 function argvEndsWith(argv: string[], flag: string): boolean {

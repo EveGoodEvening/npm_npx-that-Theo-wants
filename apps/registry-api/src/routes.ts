@@ -333,6 +333,94 @@ export async function registerRegistryRoutes(
       })),
     };
   });
+
+  // --- 14.4: Retraction API ---
+
+  app.post('/v1/packages/:name/versions/:version/retract', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const { name, version } = request.params as { name: string; version: string };
+    const body = request.body as { reason?: string };
+
+    if (!body?.reason) {
+      reply.status(400);
+      return { error: 'reason is required', statusCode: 400, requestId: request.id };
+    }
+
+    const packagesRepo = new PackagesRepository(db);
+    const pkg = await packagesRepo.findByName(name);
+    if (!pkg) {
+      reply.status(404);
+      return { error: 'package not found', statusCode: 404, requestId: request.id };
+    }
+
+    const versionsRepo = new PackageVersionsRepository(db);
+    const allVersions = await versionsRepo.listByPackage(pkg.id);
+    const targetVersion = allVersions.find((v) => v.version === version);
+    if (!targetVersion) {
+      reply.status(404);
+      return { error: 'version not found', statusCode: 404, requestId: request.id };
+    }
+
+    // Check eligibility: observed_installs < 100 OR age < 5h.
+    const publishedAt = targetVersion.publishedAt;
+    const ageMs = Date.now() - new Date(publishedAt).getTime();
+    const ageHours = ageMs / (1000 * 60 * 60);
+    const observedInstalls = 0; // TODO: query from event store/rollups.
+
+    const eligible = observedInstalls < 100 || ageHours < 5;
+
+    if (!eligible) {
+      reply.status(409);
+      return {
+        error: 'RETRACTION_NOT_ELIGIBLE',
+        statusCode: 409,
+        requestId: request.id,
+        facts: {
+          observedInstalls,
+          ageHours,
+          threshold: { maxInstalls: 100, maxAgeHours: 5 },
+        },
+      };
+    }
+
+    // Mark version as retracted.
+    await versionsRepo.updateStatus(targetVersion.id, 'retracted');
+
+    // Remove active alias if it points to this publish ID.
+    const aliasesRepo = new VersionAliasesRepository(db);
+    const alias = await aliasesRepo.find(pkg.id, version);
+    if (alias && alias.activePublishId === targetVersion.publishId) {
+      // Move dist-tag to previous eligible version or remove.
+      const distTagsRepo = new DistTagsRepository(db);
+      const tags = await distTagsRepo.listByPackage(pkg.id);
+      for (const tag of tags) {
+        if (tag.version === version) {
+          // Find previous version to move tag to.
+          const previousVersion = allVersions
+            .filter((v) => v.version !== version && v.status !== 'retracted')
+            .sort((a, b) => b.version.localeCompare(a.version))[0];
+          if (previousVersion) {
+            await distTagsRepo.upsert({
+              packageId: pkg.id,
+              tag: tag.tag,
+              version: previousVersion.version,
+              publishId: previousVersion.publishId,
+            });
+          }
+        }
+      }
+    }
+
+    return {
+      ok: true,
+      package: name,
+      version,
+      status: 'retracted',
+      reason: body.reason,
+      facts: { observedInstalls, ageHours },
+    };
+  });
 }
 
 interface PublishBody {

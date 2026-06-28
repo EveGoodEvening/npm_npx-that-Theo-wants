@@ -7,3 +7,5 @@ export * from './provenance.js';
 export * from './name-corpus.js';
 export * from './name-normalize.js';
 export * from './name-risk.js';
+export * from './events.js';
+export * from './rollups.js';
