@@ -33,6 +33,8 @@ export interface RegistryRoutesOptions {
   keyManager?: KeyManager;
   /** Optional job queue for enqueueing audit jobs. */
   jobQueue?: { enqueue: (type: string, payload: unknown, options?: { idempotencyKey?: string }) => unknown };
+  /** Optional npm proxy for public package fallback. */
+  npmProxy?: { fetchPackument: (name: string) => Promise<{ body: string; etag?: string; fromCache: boolean }>; fetchTarball: (url: string) => Promise<{ buffer: Buffer; integrity: string }>; mergeRiskSummary: (p: Record<string, unknown>, r: Record<string, unknown>) => Record<string, unknown>; getConfig: () => { enabled: boolean } };
 }
 
 export async function registerRegistryRoutes(
@@ -42,6 +44,7 @@ export async function registerRegistryRoutes(
   const { db, objectStore, registryBaseUrl } = options;
   const keyManager = options.keyManager;
   const jobQueue = options.jobQueue;
+  const npmProxy = options.npmProxy;
 
   // --- 8.2: Publish API ---
 
@@ -198,6 +201,20 @@ export async function registerRegistryRoutes(
     const packagesRepo = new PackagesRepository(db);
     const pkg = await packagesRepo.findByName(name);
     if (!pkg) {
+      // 23.1: Proxy to public npm if enabled.
+      if (npmProxy && npmProxy.getConfig().enabled) {
+        try {
+          const result = await npmProxy.fetchPackument(name);
+          const packument = JSON.parse(result.body) as Record<string, unknown>;
+          // Merge local risk summary as namespaced extension.
+          const merged = npmProxy.mergeRiskSummary(packument, { proxied: true });
+          reply.header('x-safe-npm-proxied', 'true');
+          reply.header('etag', result.etag ?? '');
+          return merged;
+        } catch {
+          // Upstream fetch failed — fall through to 404.
+        }
+      }
       reply.status(404);
       return { error: 'not found', statusCode: 404, requestId: request.id };
     }
@@ -284,6 +301,35 @@ export async function registerRegistryRoutes(
     const packagesRepo = new PackagesRepository(db);
     const pkg = await packagesRepo.findByName(name);
     if (!pkg) {
+      // 23.2: Proxy tarball from upstream if enabled.
+      if (npmProxy && npmProxy.getConfig().enabled) {
+        try {
+          // Fetch the packument to get the tarball URL.
+          const packumentResult = await npmProxy.fetchPackument(name);
+          const packument = JSON.parse(packumentResult.body) as Record<string, unknown>;
+          const versions = packument.versions as Record<string, { dist?: { tarball?: string; integrity?: string } }>;
+          // Extract version from tarball name.
+          const versionMatch = tarball.match(/-(\d+\.\d+\.\d+[^.]*)\.tgz$/);
+          if (versionMatch) {
+            const targetVersion = versionMatch[1]!;
+            const versionData = versions?.[targetVersion];
+            if (versionData?.dist?.tarball) {
+              const { buffer, integrity } = await npmProxy.fetchTarball(versionData.dist.tarball);
+              // Verify integrity if upstream provided it.
+              if (versionData.dist.integrity && versionData.dist.integrity !== integrity) {
+                reply.status(502);
+                return { error: 'tarball integrity mismatch', statusCode: 502, requestId: request.id };
+              }
+              reply.header('content-type', 'application/gzip');
+              reply.header('cache-control', 'public, max-age=31536000, immutable');
+              reply.header('x-safe-npm-proxied', 'true');
+              return reply.send(buffer);
+            }
+          }
+        } catch {
+          // Upstream fetch failed — fall through to 404.
+        }
+      }
       reply.status(404);
       return { error: 'not found', statusCode: 404, requestId: request.id };
     }

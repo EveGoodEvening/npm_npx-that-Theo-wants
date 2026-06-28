@@ -1199,23 +1199,23 @@ Definition of done:
 
 ### 23.1 Proxy packuments
 
-- [ ] Add registry source config.
-- [ ] Implement public npm packument fetch through API.
-- [ ] Cache packuments with ETag/TTL.
-- [ ] Preserve upstream metadata.
-- [ ] Merge local risk summary without mutating upstream version fields unless under namespaced extension.
+- [x] Add registry source config.
+- [x] Implement public npm packument fetch through API.
+- [x] Cache packuments with ETag/TTL.
+- [x] Preserve upstream metadata.
+- [x] Merge local risk summary without mutating upstream version fields unless under namespaced extension.
 
 ### 23.2 Proxy tarballs
 
-- [ ] Download upstream tarball on first request.
-- [ ] Verify integrity from upstream packument.
+- [x] Download upstream tarball on first request.
+- [x] Verify integrity from upstream packument.
 - [ ] Store content-addressed.
 - [ ] Serve cached tarball.
-- [ ] Preserve upstream content exactly.
+- [x] Preserve upstream content exactly.
 
 ### 23.3 Policy controls
 
-- [ ] Allow org/project policy to disable public fallback.
+- [x] Allow org/project policy to disable public fallback.
 - [ ] Allow org/project policy to block nonregistry sources.
 - [ ] Add risk warning for upstream package lacking signatures/provenance.
 
