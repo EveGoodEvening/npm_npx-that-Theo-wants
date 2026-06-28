@@ -31,7 +31,12 @@ export type PackageSpecSource = z.infer<typeof PackageSpecSource>;
 export const PackageSpec = z.object({
   /** Raw input string, e.g. `is-odd@latest` or `@scope/pkg@1.2.3`. */
   raw: z.string().min(1),
-  name: PackageName,
+  /**
+   * Package name. Always present for registry sources; may be empty for
+   * non-registry sources (git/file/directory/remote) where npm-package-arg
+   * does not produce a name. Use {@link PackageName} to validate registry names.
+   */
+  name: z.string(),
   /** Semver range, exact version, dist-tag, or empty for `latest`. */
   specifier: z.string(),
   /** Resolved source type. */

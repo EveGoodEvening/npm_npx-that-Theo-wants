@@ -131,56 +131,56 @@ Definition of done:
 
 ### 3.1 Package spec parsing
 
-- [ ] Add dependency on `npm-package-arg` or implement equivalent wrapper.
-- [ ] Implement `parsePackageSpec(input: string)`.
-- [ ] Support:
-  - [ ] unscoped names
-  - [ ] scoped names
-  - [ ] exact versions
-  - [ ] dist-tags
-  - [ ] semver ranges
-- [ ] Reject unsupported sources in strict mode:
-  - [ ] git
-  - [ ] file
-  - [ ] directory
-  - [ ] remote tarball
-- [ ] Add tests for all spec types.
+- [x] Add dependency on `npm-package-arg` or implement equivalent wrapper.
+- [x] Implement `parsePackageSpec(input: string)`.
+- [x] Support:
+  - [x] unscoped names
+  - [x] scoped names
+  - [x] exact versions
+  - [x] dist-tags
+  - [x] semver ranges
+- [x] Reject unsupported sources in strict mode:
+  - [x] git
+  - [x] file
+  - [x] directory
+  - [x] remote tarball
+- [x] Add tests for all spec types.
 
 ### 3.2 Registry metadata fetching
 
-- [ ] Implement `fetchPackument(registryUrl, packageName)`.
-- [ ] Implement ETag/If-None-Match cache support.
-- [ ] Implement `resolveVersion(packument, spec)`.
-- [ ] Implement dist-tag resolution.
-- [ ] Implement semver range resolution.
-- [ ] Add tests using fixture packuments.
+- [x] Implement `fetchPackument(registryUrl, packageName)`.
+- [x] Implement ETag/If-None-Match cache support.
+- [x] Implement `resolveVersion(packument, spec)`.
+- [x] Implement dist-tag resolution.
+- [x] Implement semver range resolution.
+- [x] Add tests using fixture packuments.
 
 ### 3.3 Tarball fetching
 
-- [ ] Implement `downloadTarball(url, destination, expectedIntegrity?)`.
-- [ ] Verify SHA-512 integrity when available.
-- [ ] Verify SHA-1 shasum when SHA-512 is unavailable.
-- [ ] Add timeout and max-size guard.
-- [ ] Add tests for good integrity.
-- [ ] Add tests for integrity mismatch.
-- [ ] Add tests for oversized tarball block.
+- [x] Implement `downloadTarball(url, destination, expectedIntegrity?)`.
+- [x] Verify SHA-512 integrity when available.
+- [x] Verify SHA-1 shasum when SHA-512 is unavailable.
+- [x] Add timeout and max-size guard.
+- [x] Add tests for good integrity.
+- [x] Add tests for integrity mismatch.
+- [x] Add tests for oversized tarball block.
 
 ### 3.4 Packument generation
 
-- [ ] Define internal package/version model to npm packument converter.
-- [ ] Include `dist-tags`.
-- [ ] Include `versions`.
-- [ ] Include `time`.
-- [ ] Include `dist.tarball`.
-- [ ] Include `dist.integrity`.
-- [ ] Include `dist.signatures` when present.
-- [ ] Exclude retracted versions from normal packuments.
-- [ ] Include deprecation warnings for deprecated versions.
-- [ ] Add snapshot tests for generated packuments.
+- [x] Define internal package/version model to npm packument converter.
+- [x] Include `dist-tags`.
+- [x] Include `versions`.
+- [x] Include `time`.
+- [x] Include `dist.tarball`.
+- [x] Include `dist.integrity`.
+- [x] Include `dist.signatures` when present.
+- [x] Exclude retracted versions from normal packuments.
+- [x] Include deprecation warnings for deprecated versions.
+- [x] Add snapshot tests for generated packuments.
 
 Definition of done:
 
-- [ ] The package can resolve and download a public npm tarball without executing code.
+- [x] The package can resolve and download a public npm tarball without executing code.
 - [ ] The package can generate packuments accepted by `pacote` in tests.
 
 ---
