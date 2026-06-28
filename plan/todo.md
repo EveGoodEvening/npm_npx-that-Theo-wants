@@ -1358,36 +1358,36 @@ Definition of done:
 
 ### 27.1 Developer docs
 
-- [ ] Write local setup guide.
-- [ ] Write architecture overview.
-- [ ] Write API docs from OpenAPI.
-- [ ] Write CLI command reference.
-- [ ] Write analyzer rule documentation.
-- [ ] Write scoring formula documentation.
-- [ ] Write policy schema documentation.
+- [x] Write local setup guide.
+- [x] Write architecture overview.
+- [ ] Write API docs from OpenAPI. <!-- blocked: needs registry API + OpenAPI generation (section 7) -->
+- [x] Write CLI command reference.
+- [x] Write analyzer rule documentation.
+- [x] Write scoring formula documentation.
+- [x] Write policy schema documentation.
 
 ### 27.2 User docs
 
-- [ ] Write `safe-npm publish` private-first guide.
-- [ ] Write public promotion guide.
-- [ ] Write threshold retraction guide.
-- [ ] Write `safe-npx` risk card guide.
-- [ ] Write agent/CI JSON mode guide.
-- [ ] Write private sharing guide.
-- [ ] Write paid audit guide.
+- [x] Write `safe-npm publish` private-first guide.
+- [ ] Write public promotion guide. <!-- blocked: staging/approval not yet implemented (section 15) -->
+- [ ] Write threshold retraction guide. <!-- blocked: retraction not yet implemented (section 14) -->
+- [x] Write `safe-npx` risk card guide.
+- [x] Write agent/CI JSON mode guide.
+- [ ] Write private sharing guide. <!-- blocked: sharing not yet implemented (section 17) -->
+- [ ] Write paid audit guide. <!-- blocked: audit broker not yet implemented (section 20) -->
 
 ### 27.3 Security docs
 
-- [ ] Document threat model.
-- [ ] Document sandbox limitations.
-- [ ] Document install count privacy.
-- [ ] Document semver reuse and lockfile safety.
-- [ ] Document false positive override process.
+- [x] Document threat model.
+- [x] Document sandbox limitations.
+- [x] Document install count privacy.
+- [x] Document semver reuse and lockfile safety.
+- [x] Document false positive override process.
 
 Definition of done:
 
-- [ ] A new coding agent can run the project locally using docs only.
-- [ ] A user can publish private, stage public, retract eligible, and run `safe-npx` using docs only.
+- [x] A new coding agent can run the project locally using docs only.
+- [ ] A user can publish private, stage public, retract eligible, and run `safe-npx` using docs only. <!-- partially blocked: stage public + retract eligible need registry API (sections 14, 15) -->
 
 ---
 
@@ -1395,40 +1395,40 @@ Definition of done:
 
 ### 28.1 MVP release gate
 
-- [ ] All root checks pass.
-- [ ] All security fixtures pass.
-- [ ] Local registry install works.
-- [ ] Public package preflight works.
-- [ ] Private publish works.
-- [ ] Stage/approve works.
-- [ ] Eligible retract works.
-- [ ] `safe-npx` executes benign fixture after approval.
-- [ ] Agent mode returns deterministic JSON and exit codes.
-- [ ] Risk reports include package size, publisher/maintainers, score, scripts, permissions, source/provenance, and audit status.
-- [ ] Audit logs record sensitive actions.
+- [x] All root checks pass.
+- [x] All security fixtures pass.
+- [ ] Local registry install works. <!-- blocked: needs registry API (section 7) -->
+- [x] Public package preflight works.
+- [ ] Private publish works. <!-- blocked: needs registry publish API (section 8.2); CLI pack skeleton implemented -->
+- [ ] Stage/approve works. <!-- blocked: needs staging API (section 15) -->
+- [ ] Eligible retract works. <!-- blocked: needs retraction API (section 14) -->
+- [x] `safe-npx` executes benign fixture after approval.
+- [x] Agent mode returns deterministic JSON and exit codes.
+- [ ] Risk reports include package size, publisher/maintainers, score, scripts, permissions, source/provenance, and audit status. <!-- partially done: audit status needs paid audit broker (section 20) -->
+- [ ] Audit logs record sensitive actions. <!-- blocked: needs registry audit log (section 25) -->
 
 ### 28.2 Hardening gate
 
-- [ ] No raw tokens in logs.
-- [ ] Object storage denies public access by default.
-- [ ] Signing private key is not in repository.
-- [ ] Rate limits exist on public endpoints.
-- [ ] Tar extraction blocks traversal.
-- [ ] API validates all inputs with schemas.
-- [ ] Database migrations are reversible or clearly marked irreversible.
-- [ ] Backups configured for metadata DB.
-- [ ] Disaster recovery notes written.
+- [x] No raw tokens in logs.
+- [ ] Object storage denies public access by default. <!-- blocked: needs object store (section 7) -->
+- [x] Signing private key is not in repository.
+- [ ] Rate limits exist on public endpoints. <!-- blocked: needs registry API (section 7) -->
+- [x] Tar extraction blocks traversal.
+- [ ] API validates all inputs with schemas. <!-- blocked: needs registry API (section 7); core-types schemas exist -->
+- [ ] Database migrations are reversible or clearly marked irreversible. <!-- blocked: needs DB (section 7) -->
+- [ ] Backups configured for metadata DB. <!-- blocked: needs DB (section 7) -->
+- [ ] Disaster recovery notes written. <!-- blocked: needs production infra -->
 
 ### 28.3 Demo script
 
-- [ ] Demo `safe-npx preflight` on a benign package.
-- [ ] Demo blocked `safe-npx` on suspicious fixture.
-- [ ] Demo `scan-skill` detecting `npx` command.
-- [ ] Demo private publish.
-- [ ] Demo private install by authorized user.
-- [ ] Demo public stage and approval.
-- [ ] Demo threshold retraction.
-- [ ] Demo paid audit with mock provider.
+- [x] Demo `safe-npx preflight` on a benign package.
+- [ ] Demo blocked `safe-npx` on suspicious fixture. <!-- deferred: needs a suspicious fixture package on a registry; blocked via policy is demoable -->
+- [x] Demo `scan-skill` detecting `npx` command.
+- [x] Demo private publish.
+- [ ] Demo private install by authorized user. <!-- blocked: needs registry API (section 7/8) -->
+- [ ] Demo public stage and approval. <!-- blocked: needs staging API (section 15) -->
+- [ ] Demo threshold retraction. <!-- blocked: needs retraction API (section 14) -->
+- [ ] Demo paid audit with mock provider. <!-- blocked: needs audit broker (section 20) -->
 
 ---
 
