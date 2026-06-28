@@ -130,6 +130,16 @@ vi.mock('@safe-npm/db', () => {
       reject: vi.fn(async () => {}),
       cancel: vi.fn(async () => {}),
     })),
+    PackageAclRepository: vi.fn().mockImplementation(() => ({
+      grant: vi.fn(async (data: { packageId: string; principalType: string; principalId: string; role: string }) => {
+        const id = `acl-${++tokenSeq}`;
+        return { id, ...data, createdAt: new Date().toISOString() };
+      }),
+      revoke: vi.fn(async () => {}),
+      listByPackage: vi.fn(async () => []),
+      findForPrincipal: vi.fn(async () => null),
+      checkAccess: vi.fn(async () => false),
+    })),
   };
 });
 

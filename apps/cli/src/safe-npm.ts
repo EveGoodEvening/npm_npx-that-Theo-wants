@@ -58,6 +58,9 @@ export async function runSafeNpm(argv: string[]): Promise<void> {
       case 'promote':
         await runPromote(positional, flags, exit);
         return;
+      case 'share':
+        await runShare(positional, flags, exit);
+        return;
       default:
         output(flags, { error: `unknown command: ${command}` });
         exit(1);
@@ -481,6 +484,82 @@ async function runPromote(positional: string[], flags: GlobalFlags, exit: (code:
     console.log(`  2. POST /v1/stage/:stageId/approve`);
   }
   exit(0);
+}
+
+async function runShare(positional: string[], flags: GlobalFlags, exit: (code: number) => void): Promise<void> {
+  const pkgName = positional[0];
+  if (!pkgName) {
+    output(flags, { error: 'share requires <pkg>', usage: 'safe-npm share <pkg> --user <user> --role read|write|admin' });
+    exit(1);
+    return;
+  }
+
+  const userIdx = positional.indexOf('--user');
+  const orgIdx = positional.indexOf('--org');
+  const roleIdx = positional.indexOf('--role');
+  const userId = userIdx >= 0 ? positional[userIdx + 1] : undefined;
+  const orgId = orgIdx >= 0 ? positional[orgIdx + 1] : undefined;
+  const role = roleIdx >= 0 ? positional[roleIdx + 1] : 'read';
+
+  if (!userId && !orgId) {
+    output(flags, { error: 'share requires --user <user> or --org <org>' });
+    exit(1);
+    return;
+  }
+
+  const token = process.env.SAFE_NPM_PUBLISH_TOKEN;
+  if (!token) {
+    output(flags, { error: 'no publish token found (set SAFE_NPM_PUBLISH_TOKEN)' });
+    exit(1);
+    return;
+  }
+
+  const registryUrl = flags.registry ?? defaultRegistryUrl();
+
+  // First, get the package ID from the registry.
+  const viewResp = await fetch(`${registryUrl}/${encodeURIComponent(pkgName).replace('%40', '@')}`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (!viewResp.ok) {
+    output(flags, { error: `failed to fetch package: ${viewResp.status}` });
+    exit(1);
+    return;
+  }
+  const packument = await viewResp.json() as { packageId?: string };
+  if (!packument.packageId) {
+    output(flags, { error: 'package ID not found in packument' });
+    exit(1);
+    return;
+  }
+
+  const principalType = userId ? 'user' : 'org';
+  const principalId = userId ?? orgId;
+
+  const resp = await fetch(`${registryUrl}/v1/shares`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      packageId: packument.packageId,
+      principalType,
+      principalId,
+      role,
+    }),
+  });
+
+  const body = await resp.json() as Record<string, unknown>;
+  if (flags.json) {
+    console.log(JSON.stringify(body));
+  } else if (resp.ok) {
+    console.log(`granted ${role} access to ${principalType} ${principalId} for ${pkgName}`);
+    console.log(`share ID: ${body.shareId}`);
+    console.log(`recipient can install with: safe-npm install ${pkgName}`);
+  } else {
+    console.error(`error: ${body.error ?? 'share failed'}`);
+  }
+  exit(resp.ok ? 0 : 1);
 }
 
 function flagsFromArgv(argv: string[]): GlobalFlags {

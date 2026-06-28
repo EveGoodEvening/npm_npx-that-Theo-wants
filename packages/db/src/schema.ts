@@ -383,15 +383,48 @@ export const trustedPublishers = safenpm.table(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     packageId: uuid('package_id').references(() => packages.id),
-    provider: text('provider').notNull(), // e.g. 'github-actions', 'gitlab-ci'
-    repository: text('repository').notNull(), // e.g. 'owner/repo'
-    workflow: text('workflow'), // e.g. 'publish.yml'
-    environment: text('environment'), // e.g. 'production'
-    allowedActions: jsonb('allowed_actions').notNull().default([]), // e.g. ['publish', 'stage']
+    provider: text('provider').notNull(),
+    repository: text('repository').notNull(),
+    workflow: text('workflow'),
+    environment: text('environment'),
+    allowedActions: jsonb('allowed_actions').notNull().default([]),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index('tp_package_idx').on(t.packageId),
     index('tp_provider_repo_idx').on(t.provider, t.repository),
+  ],
+);
+
+// --- Package ACL (Section 17.1) ---
+
+export const packageAclRole = pgEnum('package_acl_role', [
+  'read',
+  'write',
+  'admin',
+]);
+
+export const packageAclPrincipalType = pgEnum('package_acl_principal_type', [
+  'user',
+  'org',
+  'team',
+  'token',
+]);
+
+export const packageAcl = safenpm.table(
+  'package_acl',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    packageId: uuid('package_id').notNull().references(() => packages.id),
+    principalType: packageAclPrincipalType('principal_type').notNull(),
+    principalId: uuid('principal_id').notNull(), // user_id, org_id, or token_id
+    role: packageAclRole('role').notNull(),
+    grantedBy: uuid('granted_by').references(() => users.id),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('pa_package_idx').on(t.packageId),
+    index('pa_principal_idx').on(t.principalType, t.principalId),
   ],
 );

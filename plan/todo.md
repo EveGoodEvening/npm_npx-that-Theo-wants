@@ -930,33 +930,33 @@ Definition of done:
 
 ### 17.1 ACL model
 
-- [ ] Add `package_acl` migration.
-- [ ] Support principals:
-  - [ ] user
-  - [ ] org
-  - [ ] team placeholder
-  - [ ] token
-- [ ] Support roles:
-  - [ ] read
-  - [ ] write
-  - [ ] admin
+- [x] Add `package_acl` migration.
+- [x] Support principals:
+  - [x] user
+  - [x] org
+  - [x] team placeholder
+  - [x] token
+- [x] Support roles:
+  - [x] read
+  - [x] write
+  - [x] admin
 - [ ] Enforce ACL in packument and tarball endpoints.
 - [ ] Enforce ACL in publish/stage/retract endpoints.
 
 ### 17.2 Share API
 
-- [ ] Implement `POST /v1/shares`.
-- [ ] Implement `DELETE /v1/shares/:shareId`.
-- [ ] Implement `GET /v1/packages/:name/shares`.
+- [x] Implement `POST /v1/shares`.
+- [x] Implement `DELETE /v1/shares/:shareId`.
+- [x] Implement `GET /v1/packages/:name/shares`.
 - [ ] Audit log share changes.
 
 ### 17.3 CLI sharing
 
-- [ ] Implement `safe-npm share <pkg> --user <user> --role read|write|admin`.
-- [ ] Implement `safe-npm share <pkg> --org <org> --role read|write|admin`.
+- [x] Implement `safe-npm share <pkg> --user <user> --role read|write|admin`.
+- [x] Implement `safe-npm share <pkg> --org <org> --role read|write|admin`.
 - [ ] Implement `safe-npm grant-token <pkg> --ttl <duration> --command install|exec|publish`.
-- [ ] Print command example for recipient.
-- [ ] Add JSON output.
+- [x] Print command example for recipient.
+- [x] Add JSON output.
 
 Definition of done:
 

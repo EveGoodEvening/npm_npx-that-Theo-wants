@@ -10,6 +10,7 @@ import {
   DistTagsRepository,
   RiskReportsRepository,
   StageRecordsRepository,
+  PackageAclRepository,
   type DbClient,
 } from '@safe-npm/db';
 import { ObjectStore, computeSha512 } from '@safe-npm/object-store';
@@ -534,6 +535,72 @@ export async function registerRegistryRoutes(
     }
     await stageRepo.reject(stageId, request.user!.userId, body?.reviewNotes);
     return { ok: true, status: 'rejected', stageId };
+  });
+
+  // --- 17.2: Share API ---
+
+  const aclRepo = new PackageAclRepository(db);
+
+  // POST /v1/shares — grant access to a package.
+  app.post('/v1/shares', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request, reply) => {
+    const body = request.body as {
+      packageId?: string;
+      principalType?: string;
+      principalId?: string;
+      role?: string;
+    };
+    if (!body?.packageId || !body?.principalType || !body?.principalId || !body?.role) {
+      reply.status(400);
+      return { error: 'packageId, principalType, principalId, and role are required', statusCode: 400, requestId: request.id };
+    }
+
+    const validRoles = ['read', 'write', 'admin'];
+    if (!validRoles.includes(body.role)) {
+      reply.status(400);
+      return { error: 'role must be read, write, or admin', statusCode: 400, requestId: request.id };
+    }
+
+    const validPrincipalTypes = ['user', 'org', 'team', 'token'];
+    if (!validPrincipalTypes.includes(body.principalType)) {
+      reply.status(400);
+      return { error: 'principalType must be user, org, team, or token', statusCode: 400, requestId: request.id };
+    }
+
+    const acl = await aclRepo.grant({
+      packageId: body.packageId,
+      principalType: body.principalType,
+      principalId: body.principalId,
+      role: body.role,
+      grantedBy: request.user!.userId,
+    });
+
+    return { ok: true, shareId: acl.id, role: acl.role };
+  });
+
+  // DELETE /v1/shares/:shareId — revoke access.
+  app.delete('/v1/shares/:shareId', {
+    preHandler: requireScopes(SCOPES.ADMIN),
+  }, async (request) => {
+    const { shareId } = request.params as { shareId: string };
+    await aclRepo.revoke(shareId);
+    return { ok: true };
+  });
+
+  // GET /v1/packages/:name/shares — list shares for a package.
+  app.get('/v1/packages/:name/shares', {
+    preHandler: requireScopes(SCOPES.READ),
+  }, async (request, reply) => {
+    const { name } = request.params as { name: string };
+    const packagesRepo = new PackagesRepository(db);
+    const pkg = await packagesRepo.findByName(name);
+    if (!pkg) {
+      reply.status(404);
+      return { error: 'package not found', statusCode: 404, requestId: request.id };
+    }
+    const shares = await aclRepo.listByPackage(pkg.id);
+    return { shares };
   });
 }
 
