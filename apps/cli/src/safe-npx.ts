@@ -1,6 +1,7 @@
 #!/usr/bin/env node
+import { parseGlobalFlags, preflightCommand, execPreflightCommand, scanSkillCommand } from './commands.js';
+import { listTrustEntries, revokeTrustEntry, cleanExecCache, createExecCache } from './execution.js';
 import { createInterface } from 'node:readline/promises';
-import { parseGlobalFlags, preflightCommand, execPreflightCommand } from './commands.js';
 import type { RiskReport, AnalysisReport } from '@safe-npm/core-types';
 
 const args = process.argv.slice(2);
@@ -22,10 +23,59 @@ async function main(): Promise<void> {
     const code = await preflightCommand(pkgSpec, flags);
     process.exit(code);
   }
-  // Default: treat first non-flag arg as a package spec to execute (no-exec prompt path).
+  if (cmd === 'scan-skill') {
+    const skillPath = rest[1];
+    if (!skillPath) {
+      process.stderr.write('usage: safe-npx scan-skill <path> [--json]\n');
+      process.exit(1);
+    }
+    const code = await scanSkillCommand(skillPath, flags);
+    process.exit(code);
+  }
+  if (cmd === 'trust') {
+    const sub = rest[1];
+    if (sub === 'list') {
+      const entries = await listTrustEntries();
+      if (flags.json) {
+        process.stdout.write(JSON.stringify({ entries }, null, 2) + '\n');
+      } else {
+        for (const e of entries) {
+          process.stdout.write(`${e.packageName}@${e.version} [${e.scope}] digest=${e.tarballDigest}\n`);
+        }
+      }
+      process.exit(0);
+    }
+    if (sub === 'revoke') {
+      const pkg = rest[2];
+      const version = rest[3];
+      if (!pkg) {
+        process.stderr.write('usage: safe-npx trust revoke <pkg> [version]\n');
+        process.exit(1);
+      }
+      await revokeTrustEntry(pkg, version);
+      process.stdout.write(`revoked trust for ${pkg}${version ? '@' + version : ''}\n`);
+      process.exit(0);
+    }
+    process.stderr.write('usage: safe-npx trust list | safe-npx trust revoke <pkg> [version]\n');
+    process.exit(1);
+  }
+  if (cmd === 'cache') {
+    const sub = rest[1];
+    if (sub === 'clean') {
+      await cleanExecCache(await createExecCache());
+      process.stdout.write('execution cache cleaned\n');
+      process.exit(0);
+    }
+    process.stderr.write('usage: safe-npx cache clean\n');
+    process.exit(1);
+  }
   if (cmd && !cmd.startsWith('-')) {
     const pkgSpec = cmd;
-    const code = await execPreflightCommand(pkgSpec, flags, ttyPrompt);
+    const execArgs = rest.slice(1);
+    const code = await execPreflightCommand(pkgSpec, flags, ttyPrompt, {
+      execute: true,
+      execArgs,
+    });
     process.exit(code);
   }
   if (flags.json) {

@@ -2,8 +2,10 @@ import { readFile } from 'node:fs/promises';
 import type { RiskReport, AnalysisReport, PolicyDecision, PolicySet } from '@safe-npm/core-types';
 import { SafeNpmError, toCliExitCode, PolicySetSchema } from '@safe-npm/core-types';
 import { runPreflight } from './preflight.js';
+import type { PreflightResult } from './preflight.js';
+import { installIntoCache, resolveInstalledBin, executeBin, createExecCache, execCacheKey, buildPermissionFlags, loadTrustCache, isTrusted, addTrustEntry } from './execution.js';
 import { renderTty, DEFAULT_HUMAN_POLICY, DEFAULT_AGENT_POLICY } from '@safe-npm/scoring';
-
+import { scanAndPreflight, scanExitCode } from './scan-skill.js';
 export interface GlobalFlags {
   json: boolean;
   registry?: string;
@@ -39,8 +41,18 @@ export function parseGlobalFlags(args: string[]): { flags: GlobalFlags; rest: st
     debug: false,
   };
   const rest: string[] = [];
+  let seenSeparator = false;
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!;
+    if (!seenSeparator && a === '--') {
+      // everything after -- is a positional/exec arg, not a flag
+      seenSeparator = true;
+      continue;
+    }
+    if (seenSeparator) {
+      rest.push(a);
+      continue;
+    }
     if (a === '--json') flags.json = true;
     else if (a === '--agent') flags.agent = true;
     else if (a === '--yes' || a === '-y') flags.yes = true;
@@ -136,14 +148,15 @@ export async function preflightCommand(pkgSpec: string, flags: GlobalFlags): Pro
 }
 
 /**
- * `safe-npx <pkg>` no-exec prompt path.
- * Preflights, applies policy, and prompts in TTY (or returns JSON in agent mode).
- * Does NOT execute the package in this step.
+ * `safe-npx <pkg>` preflight + optional execution path.
+ * When `options.execute` is true and policy allows (or user approves),
+ * installs the package into the execution cache and runs the selected bin.
  */
 export async function execPreflightCommand(
   pkgSpec: string,
   flags: GlobalFlags,
   promptFn: (report: RiskReport, analysis: AnalysisReport) => Promise<'yes' | 'no' | 'details'>,
+  options: { execute?: boolean; execArgs?: string[] } = {},
 ): Promise<number> {
   try {
     const policy = await loadPolicy(flags);
@@ -176,6 +189,7 @@ export async function execPreflightCommand(
       getOut(flags)(JSON.stringify(out, null, 2) + '\n');
       if (decision.decision === 'blocked') return 11;
       if (decision.decision === 'requires_approval') return 10;
+      if (options.execute) return runExec(result, flags, options);
       return 0;
     }
 
@@ -185,15 +199,27 @@ export async function execPreflightCommand(
       return 11;
     }
     if (decision.decision === 'allow') {
-      getOut(flags)('execution would start\n');
-      return 0;
+      return runExec(result, flags, options);
     }
-    // requires_approval -> prompt
+    // requires_approval -> check trust cache, then prompt
+    const trustCache = await loadTrustCache();
+    const trusted = isTrusted(trustCache, riskReport.package, riskReport.version, analysis.tarballDigest);
+    if (trusted) {
+      return runExec(result, flags, options);
+    }
     getOut(flags)(renderTty(riskReport, analysis) + '\n');
     const answer = await promptFn(riskReport, analysis);
     if (answer === 'yes') {
-      getOut(flags)('execution would start\n');
-      return 0;
+      // record trust for this exact version + digest
+      await addTrustEntry({
+        packageName: riskReport.package,
+        version: riskReport.version,
+        tarballDigest: analysis.tarballDigest,
+        riskReportDigest: riskReport.evidenceDigest,
+        scope: 'exact-version',
+        createdAt: new Date().toISOString(),
+      });
+      return runExec(result, flags, options);
     }
     if (answer === 'details') {
       getOut(flags)(renderTty(riskReport, analysis) + '\n');
@@ -206,6 +232,89 @@ export async function execPreflightCommand(
   }
 }
 
+
+
+/**
+ * Install the approved package into the execution cache and run its bin.
+ * Returns the child exit code (or 15 if enforcement required but unavailable).
+ */
+async function runExec(
+  result: PreflightResult,
+  flags: GlobalFlags,
+  options: { execute?: boolean; execArgs?: string[] },
+): Promise<number> {
+  if (!options.execute) {
+    getOut(flags)('execution would start\n');
+    return 0;
+  }
+  const { packageName, version, riskReport, selectedBin, analysis } = result;
+  if (!selectedBin) {
+    getErr(flags)('no safe bin selectable for execution\n');
+    return 14;
+  }
+  const cache = await createExecCache();
+  const policyHash = flags.policyPath ?? (flags.agent ? 'agent' : 'human');
+  const dest = execCacheKey(cache, packageName, version, analysis.tarballDigest, policyHash);
+  await installIntoCache(dest, packageName, version, {
+    ignoreScripts: true,
+    registry: flags.registry,
+  });
+  const binPath = await resolveInstalledBin(dest, packageName, selectedBin);
+  if (!binPath) {
+    getErr(flags)(`could not resolve bin ${selectedBin} after install\n`);
+    return 14;
+  }
+  const permissionFlags = riskReport.facts.permissions
+    ? buildPermissionFlags(riskReport.facts.permissions)
+    : [];
+  const enforce = flags.agent && riskReport.facts.permissions?.enforceable === true;
+  const execResult = await executeBin(binPath, {
+    args: options.execArgs,
+    tty: !flags.json && !flags.agent,
+    permissionFlags,
+    enforcePermissions: enforce,
+  });
+  if (execResult.exitCode === 15) {
+    getErr(flags)('permission enforcement unavailable but required\n');
+  }
+  if (flags.json || flags.agent) {
+    getOut(flags)(JSON.stringify({ executed: true, exitCode: execResult.exitCode, enforced: execResult.enforced }, null, 2) + '\n');
+  }
+  return execResult.exitCode;
+}
+/** `safe-npx scan-skill <path> [--json]` */
+export async function scanSkillCommand(filePath: string, flags: GlobalFlags): Promise<number> {
+  try {
+    const result = await scanAndPreflight(filePath, async (spec) => {
+      // reuse the preflight pipeline to get a decision
+      const policy = await loadPolicy(flags);
+      const pf = await runPreflight({
+        spec,
+        registryUrl: flags.registry,
+        policy,
+        agentMode: true,
+        fetchImpl: flags.fetchImpl,
+      });
+      return {
+        decision: pf.decision.decision === 'allow' ? 'allow' : pf.decision.decision === 'blocked' ? 'blocked' : 'requires_approval',
+        reason: pf.decision.reason,
+        resolvedVersion: pf.version,
+      };
+    });
+    const code = scanExitCode(result);
+    if (flags.json) {
+      getOut(flags)(JSON.stringify(result, null, 2) + '\n');
+    } else {
+      getOut(flags)(`Scanned ${result.file}: ${result.commands.length} command(s)\n`);
+      for (const c of result.commands) {
+        getOut(flags)(`  line ${c.line}: ${c.tool} ${c.spec} -> ${c.decision}\n`);
+      }
+    }
+    return code;
+  } catch (err) {
+    return handleError(err, flags);
+  }
+}
 function handleError(err: unknown, flags: GlobalFlags): number {
   const e = err instanceof SafeNpmError ? err : new SafeNpmError({
     code: 'INTERNAL_ERROR',

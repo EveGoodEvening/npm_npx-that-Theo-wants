@@ -969,57 +969,57 @@ Definition of done:
 
 ### 18.1 Execution cache
 
-- [ ] Create isolated execution cache path.
-- [ ] Cache by package name, version, tarball digest, and policy hash.
-- [ ] Ensure cache path is not project `node_modules`.
-- [ ] Add cleanup command.
+- [x] Create isolated execution cache path.
+- [x] Cache by package name, version, tarball digest, and policy hash.
+- [x] Ensure cache path is not project `node_modules`.
+- [x] Add cleanup command.
 
 ### 18.2 Install into execution cache
 
-- [ ] After policy approval, install package into temp prefix/cache.
-- [ ] Use exact resolved version.
-- [ ] Disable install scripts unless policy allows.
-- [ ] If package needs install scripts and policy blocks, exit with policy error.
-- [ ] Verify installed package integrity.
-- [ ] Resolve bin path after install.
+- [x] After policy approval, install package into temp prefix/cache.
+- [x] Use exact resolved version.
+- [x] Disable install scripts unless policy allows.
+- [x] If package needs install scripts and policy blocks, exit with policy error.
+- [x] Verify installed package integrity.
+- [x] Resolve bin path after install.
 
 ### 18.3 Node permission runner
 
-- [ ] Detect whether bin is Node-based:
-  - [ ] shebang contains node
-  - [ ] file extension JS/MJS/CJS
-  - [ ] package bin points to JS file
-- [ ] Implement permission flag builder from permission report.
-- [ ] Support fs read/write allowlists where Node version supports them.
-- [ ] Support child process/worker/native denial where Node version supports them.
-- [ ] Support network permission only when current Node supports it.
-- [ ] If required permission enforcement unavailable, exit code `15`.
+- [x] Detect whether bin is Node-based:
+  - [x] shebang contains node
+  - [x] file extension JS/MJS/CJS
+  - [x] package bin points to JS file
+- [x] Implement permission flag builder from permission report.
+- [x] Support fs read/write allowlists where Node version supports them.
+- [x] Support child process/worker/native denial where Node version supports them.
+- [x] Support network permission only when current Node supports it.
+- [x] If required permission enforcement unavailable, exit code `15`.
 
 ### 18.4 Execution
 
-- [ ] Execute child command with controlled environment.
-- [ ] Pass user args after `--` correctly.
-- [ ] Preserve stdio for TTY mode.
-- [ ] Capture result for JSON mode.
-- [ ] Return child exit code according to documented mapping.
-- [ ] Audit log approved/blocked execution when authenticated.
+- [x] Execute child command with controlled environment.
+- [x] Pass user args after `--` correctly.
+- [x] Preserve stdio for TTY mode.
+- [x] Capture result for JSON mode.
+- [x] Return child exit code according to documented mapping.
+- [ ] Audit log approved/blocked execution when authenticated. <!-- blocked: needs registry/auth (section 7/16) -->
 
 ### 18.5 Trust cache
 
-- [ ] Store local trust decisions by package name, version, tarball digest, and risk report digest.
-- [ ] Support trust scopes:
-  - [ ] once
-  - [ ] exact version
-  - [ ] digest
-  - [ ] package name only, discouraged
-- [ ] Implement `safe-npx trust list`.
-- [ ] Implement `safe-npx trust revoke`.
+- [x] Store local trust decisions by package name, version, tarball digest, and risk report digest.
+- [x] Support trust scopes:
+  - [x] once
+  - [x] exact version
+  - [x] digest
+  - [x] package name only, discouraged
+- [x] Implement `safe-npx trust list`.
+- [x] Implement `safe-npx trust revoke`.
 
 Definition of done:
 
-- [ ] `safe-npx <safe-fixture>` preflights, prompts, installs into execution cache, and runs.
-- [ ] `safe-npx --agent <package>` never prompts.
-- [ ] Node permission enforcement is used when available and required.
+- [x] `safe-npx <safe-fixture>` preflights, prompts, installs into execution cache, and runs.
+- [x] `safe-npx --agent <package>` never prompts.
+- [x] Node permission enforcement is used when available and required.
 
 ---
 
@@ -1027,37 +1027,37 @@ Definition of done:
 
 ### 19.1 Command extraction
 
-- [ ] Implement Markdown code block parser.
-- [ ] Extract shell-like command lines.
-- [ ] Detect commands:
-  - [ ] `npx`
-  - [ ] `npm exec`
-  - [ ] `npm x`
-  - [ ] `pnpm dlx`
-  - [ ] `yarn dlx`
-  - [ ] `bunx`
-- [ ] Parse package spec from each command.
-- [ ] Preserve line number and raw command.
+- [x] Implement Markdown code block parser.
+- [x] Extract shell-like command lines.
+- [x] Detect commands:
+  - [x] `npx`
+  - [x] `npm exec`
+  - [x] `npm x`
+  - [x] `pnpm dlx`
+  - [x] `yarn dlx`
+  - [x] `bunx`
+- [x] Parse package spec from each command.
+- [x] Preserve line number and raw command.
 
 ### 19.2 Preflight integration
 
-- [ ] For each detected package, run preflight.
-- [ ] Deduplicate same package spec.
-- [ ] Return per-command decision.
-- [ ] Do not execute anything.
+- [x] For each detected package, run preflight.
+- [x] Deduplicate same package spec.
+- [x] Return per-command decision.
+- [x] Do not execute anything.
 
 ### 19.3 CLI command
 
-- [ ] Implement `safe-npx scan-skill <path> --json`.
-- [ ] Implement human summary output.
-- [ ] Exit with code `11` if any command is blocked.
-- [ ] Exit with code `10` if any command requires approval and none are blocked.
-- [ ] Exit with code `0` if all pass.
+- [x] Implement `safe-npx scan-skill <path> --json`.
+- [x] Implement human summary output.
+- [x] Exit with code `11` if any command is blocked.
+- [x] Exit with code `10` if any command requires approval and none are blocked.
+- [x] Exit with code `0` if all pass.
 
 Definition of done:
 
-- [ ] Scanner finds `npx some-tool@latest` in a Markdown fixture.
-- [ ] Scanner reports blocked/approval/pass decisions in JSON.
+- [x] Scanner finds `npx some-tool@latest` in a Markdown fixture.
+- [x] Scanner reports blocked/approval/pass decisions in JSON.
 
 ---
 
