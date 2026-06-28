@@ -637,36 +637,36 @@ Definition of done:
 
 ### 11.1 Previous version selection
 
-- [ ] Implement function to find previous visible version in same package.
-- [ ] Prefer previous semver version lower than current.
-- [ ] Fallback to current `latest` before publish.
-- [ ] Ignore retracted/quarantined versions unless comparing for forensic admin mode.
+- [x] Implement function to find previous visible version in same package.
+- [x] Prefer previous semver version lower than current.
+- [x] Fallback to current `latest` before publish.
+- [x] Ignore retracted/quarantined versions unless comparing for forensic admin mode.
 
 ### 11.2 File diff
 
-- [ ] Unpack previous tarball.
-- [ ] Compute added/removed/modified files.
-- [ ] Compute total changed bytes.
-- [ ] Detect new/removed bin entries.
-- [ ] Detect new/removed lifecycle scripts.
-- [ ] Detect dependency changes.
-- [ ] Detect repository URL changes.
+- [x] Unpack previous tarball.
+- [x] Compute added/removed/modified files.
+- [x] Compute total changed bytes.
+- [x] Detect new/removed bin entries.
+- [x] Detect new/removed lifecycle scripts.
+- [x] Detect dependency changes.
+- [x] Detect repository URL changes.
 
 ### 11.3 Risk integration
 
-- [ ] Add score deductions for risky deltas:
-  - [ ] new install script
-  - [ ] new child process usage
-  - [ ] new network usage
-  - [ ] new native binary
-  - [ ] source repo changed
-  - [ ] maintainer/publisher changed
-- [ ] Add report section `diffRisk`.
-- [ ] Add tests with package fixture versions.
+- [x] Add score deductions for risky deltas:
+  - [x] new install script
+  - [x] new child process usage
+  - [x] new network usage
+  - [x] new native binary
+  - [x] source repo changed
+  - [x] maintainer/publisher changed
+- [x] Add report section `diffRisk`.
+- [x] Add tests with package fixture versions.
 
 Definition of done:
 
-- [ ] Risk report can explain what changed since the previous version.
+- [x] Risk report can explain what changed since the previous version.
 
 ---
 
@@ -674,40 +674,40 @@ Definition of done:
 
 ### 12.1 OSV integration
 
-- [ ] Implement OSV query client.
-- [ ] Cache OSV responses by package/version.
-- [ ] Add timeout and graceful degradation.
-- [ ] Normalize OSV severity where available.
-- [ ] Add risk findings for known vulnerabilities.
-- [ ] Add policy option `blockKnownCriticalVulns`.
-- [ ] Add tests with mocked OSV responses.
+- [x] Implement OSV query client.
+- [x] Cache OSV responses by package/version.
+- [x] Add timeout and graceful degradation.
+- [x] Normalize OSV severity where available.
+- [x] Add risk findings for known vulnerabilities.
+- [x] Add policy option `blockKnownCriticalVulns`.
+- [x] Add tests with mocked OSV responses.
 
 ### 12.2 Repository health integration
 
-- [ ] Extract repository URL from package metadata/provenance.
-- [ ] Normalize GitHub/GitLab URLs.
-- [ ] Implement OpenSSF Scorecard lookup or command adapter.
-- [ ] Cache results by repo+commit/date.
-- [ ] Add score component for repo health.
-- [ ] Treat missing repo as lower confidence, not automatic block.
+- [x] Extract repository URL from package metadata/provenance.
+- [x] Normalize GitHub/GitLab URLs.
+- [x] Implement OpenSSF Scorecard lookup or command adapter.
+- [x] Cache results by repo+commit/date.
+- [x] Add score component for repo health.
+- [x] Treat missing repo as lower confidence, not automatic block.
 
 ### 12.3 Provenance integration
 
-- [ ] Parse npm provenance metadata when available.
-- [ ] Validate provenance subject digest matches tarball digest where possible.
-- [ ] Validate source repo matches package metadata where possible.
-- [ ] Add `provenanceStatus`:
-  - [ ] `verified`
-  - [ ] `missing`
-  - [ ] `mismatch`
-  - [ ] `unsupported`
-- [ ] Add blocker for mismatch.
-- [ ] Add score bonus for verified provenance.
+- [x] Parse npm provenance metadata when available.
+- [x] Validate provenance subject digest matches tarball digest where possible.
+- [x] Validate source repo matches package metadata where possible.
+- [x] Add `provenanceStatus`:
+  - [x] `verified`
+  - [x] `missing`
+  - [x] `mismatch`
+  - [x] `unsupported`
+- [x] Add blocker for mismatch.
+- [x] Add score bonus for verified provenance.
 
 Definition of done:
 
-- [ ] Risk report includes vulnerability, repo health, and provenance sections.
-- [ ] External service failures reduce confidence but do not crash preflight.
+- [x] Risk report includes vulnerability, repo health, and provenance sections.
+- [x] External service failures reduce confidence but do not crash preflight.
 
 ---
 
@@ -715,41 +715,41 @@ Definition of done:
 
 ### 13.1 Popular package corpus
 
-- [ ] Create table or JSON fixture for popular package names.
-- [ ] Include configurable popularity rank/download/install count.
-- [ ] Add scheduled update placeholder.
-- [ ] Add tests with fake popular corpus.
+- [x] Create table or JSON fixture for popular package names.
+- [x] Include configurable popularity rank/download/install count.
+- [x] Add scheduled update placeholder.
+- [x] Add tests with fake popular corpus.
 
 ### 13.2 Name normalization
 
-- [ ] Strip punctuation variants.
-- [ ] Normalize Unicode confusables.
-- [ ] Normalize common substitutions:
-  - [ ] `0` ↔ `o`
-  - [ ] `1` ↔ `l` / `i`
-  - [ ] `_` ↔ `-` / `.`
-- [ ] Lowercase names.
+- [x] Strip punctuation variants.
+- [x] Normalize Unicode confusables.
+- [x] Normalize common substitutions:
+  - [x] `0` ↔ `o`
+  - [x] `1` ↔ `l` / `i`
+  - [x] `_` ↔ `-` / `.`
+- [x] Lowercase names.
 
 ### 13.3 Similarity scoring
 
-- [ ] Implement edit-distance comparison.
-- [ ] Implement Jaro-Winkler or equivalent.
-- [ ] Compare scoped and unscoped names separately.
-- [ ] Increase risk for new packages similar to high-popularity packages.
-- [ ] Increase risk for author mismatch and no provenance.
-- [ ] Add high-confidence blocker threshold.
+- [x] Implement edit-distance comparison.
+- [x] Implement Jaro-Winkler or equivalent.
+- [x] Compare scoped and unscoped names separately.
+- [x] Increase risk for new packages similar to high-popularity packages.
+- [x] Increase risk for author mismatch and no provenance.
+- [x] Add high-confidence blocker threshold.
 
 ### 13.4 Publish-time name gate
 
-- [ ] On public promotion, compute name risk.
-- [ ] Block high-confidence typosquats.
-- [ ] Require admin/human review for medium-confidence cases.
-- [ ] Add API to store review decision.
+- [x] On public promotion, compute name risk.
+- [x] Block high-confidence typosquats.
+- [x] Require admin/human review for medium-confidence cases.
+- [ ] Add API to store review decision. <!-- blocked: needs registry API (section 7/15) -->
 
 Definition of done:
 
-- [ ] Fixture `is-0dd` is flagged as similar to `is-odd`.
-- [ ] High-confidence typosquat blocks public promotion and strict installs.
+- [x] Fixture `is-0dd` is flagged as similar to `is-odd`.
+- [x] High-confidence typosquat blocks public promotion and strict installs.
 
 ---
 

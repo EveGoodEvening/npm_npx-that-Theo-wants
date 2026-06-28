@@ -35,6 +35,7 @@ export function evaluatePolicy(policy: PolicySet, ctx: PolicyEvaluationContext):
     requirePermissionEnforcement?: boolean;
     allowNativeBinaries?: boolean;
     publicPromotionMinimumScore?: number;
+    blockKnownCriticalVulns?: boolean;
   };
 
   // requireNoBlockers
@@ -69,7 +70,6 @@ export function evaluatePolicy(policy: PolicySet, ctx: PolicyEvaluationContext):
       });
     }
   }
-
   // allowInstallScripts (install action)
   if (action === 'install' && rules.allowInstallScripts === false) {
     const hasInstallScript = riskReport.warnings.some((w) => w.code === 'LIFECYCLE_SCRIPT_PRESENT');
@@ -80,6 +80,20 @@ export function evaluatePolicy(policy: PolicySet, ctx: PolicyEvaluationContext):
         actual: 'lifecycle scripts present',
       });
       overrides.push('human-approve-exact-version');
+    }
+  }
+
+  // blockKnownCriticalVulns (install action)
+  if (action === 'install' && rules.blockKnownCriticalVulns) {
+    const hasCriticalVuln = riskReport.warnings.some(
+      (w) => w.code === 'KNOWN_VULNERABILITY' && w.severity === 'critical',
+    );
+    if (hasCriticalVuln) {
+      matched.push({
+        path: 'install.blockKnownCriticalVulns',
+        expected: 'no critical vulnerabilities',
+        actual: 'critical vulnerability present',
+      });
     }
   }
 
@@ -137,14 +151,18 @@ export function evaluatePolicy(policy: PolicySet, ctx: PolicyEvaluationContext):
   const hasBlocker = riskReport.blockers.length > 0 && rules.requireNoBlockers;
   const tierBlocked = rules.blockTiers.includes(riskReport.tier as 'danger' | 'blocked');
   const scoreBlocked = rules.minimumScore !== undefined && riskReport.score < rules.minimumScore;
+  const criticalVulnBlock =
+    action === 'install' &&
+    rules.blockKnownCriticalVulns === true &&
+    riskReport.warnings.some((w) => w.code === 'KNOWN_VULNERABILITY' && w.severity === 'critical');
 
   let decision: PolicyDecisionKind;
   let allow: boolean;
-  // Hard blocks: blockers present, tier blocked, or (exec) enforcement unavailable when required.
+  // Hard blocks: blockers present, tier blocked, critical vuln block, or (exec) enforcement unavailable.
   const enforcementMissing =
     action === 'exec' && rules.requirePermissionEnforcement && !ctx.permissionEnforcementAvailable;
 
-  if (hasBlocker || tierBlocked || enforcementMissing) {
+  if (hasBlocker || tierBlocked || criticalVulnBlock || enforcementMissing) {
     decision = 'blocked';
     allow = false;
   } else if (scoreBlocked || matched.length > 0) {

@@ -288,4 +288,17 @@ describe('evaluatePolicy', () => {
     assert.equal(getPreset('ci').name, 'ci');
     assert.equal(getPreset('default').name, 'default-human');
   });
+
+  test('blockKnownCriticalVulns blocks install on critical vuln', () => {
+    const report = scoreAnalysis({ analysis: baseAnalysis() });
+    // inject a critical vulnerability warning manually
+    report.warnings.push({ code: 'KNOWN_VULNERABILITY', severity: 'critical', message: 'rce', evidence: ['V1'] });
+    const policy = { ...STRICT_POLICY, install: { ...STRICT_POLICY.install, blockKnownCriticalVulns: true } };
+    const decision = evaluatePolicy(policy, {
+      riskReport: report,
+      action: 'install',
+    });
+    assert.equal(decision.decision, 'blocked');
+    assert.equal(decision.allow, false);
+  });
 });

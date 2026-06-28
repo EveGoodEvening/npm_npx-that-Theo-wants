@@ -77,6 +77,7 @@ export function scoreAnalysis(input: ScoreAnalysisInput): RiskReport {
   const allFindings: RiskFinding[] = [
     ...analysis.scriptFindings,
     ...analysis.staticFindings,
+    ...(analysis.diffRisk?.riskyDeltas ?? []),
   ];
 
   // Collect blockers.

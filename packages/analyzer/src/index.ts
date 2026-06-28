@@ -119,3 +119,4 @@ export function emptyPermissions(): Permissions {
 }
 
 export { join };
+export * from './diff.js';

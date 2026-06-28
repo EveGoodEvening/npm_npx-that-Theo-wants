@@ -215,5 +215,25 @@ export const AnalysisReportSchema = z.object({
   inferredPermissions: PermissionsSchema,
   /** Resolved bin entry selected for execution, if any. */
   selectedBin: z.string().optional(),
+  /** Diff vs previous version, when available. */
+  diffRisk: z
+    .object({
+      previousVersion: z.string().optional(),
+      filesAdded: z.number().int().nonnegative().default(0),
+      filesRemoved: z.number().int().nonnegative().default(0),
+      filesModified: z.number().int().nonnegative().default(0),
+      changedBytes: z.number().int().default(0),
+      newBinEntries: z.array(z.string()).default([]),
+      removedBinEntries: z.array(z.string()).default([]),
+      newLifecycleScripts: z.array(z.string()).default([]),
+      removedLifecycleScripts: z.array(z.string()).default([]),
+      dependencyChanges: z.array(z.string()).default([]),
+      repositoryUrlChanged: z.boolean().default(false),
+      maintainerChanged: z.boolean().default(false),
+      summary: z.string().default(''),
+      /** Risk deductions triggered by risky deltas. */
+      riskyDeltas: z.array(RiskFindingSchema).default([]),
+    })
+    .optional(),
 });
 export type AnalysisReport = z.infer<typeof AnalysisReportSchema>;
