@@ -716,29 +716,29 @@ Definition of done:
 
 ### 13.1 Popular package corpus
 
-- [ ] Create table or JSON fixture for popular package names.
-- [ ] Include configurable popularity rank/download/install count.
-- [ ] Add scheduled update placeholder.
-- [ ] Add tests with fake popular corpus.
+- [x] Create table or JSON fixture for popular package names.
+- [x] Include configurable popularity rank/download/install count.
+- [x] Add scheduled update placeholder.
+- [x] Add tests with fake popular corpus.
 
 ### 13.2 Name normalization
 
-- [ ] Strip punctuation variants.
-- [ ] Normalize Unicode confusables.
-- [ ] Normalize common substitutions:
-  - [ ] `0` ↔ `o`
-  - [ ] `1` ↔ `l` / `i`
-  - [ ] `_` ↔ `-` / `.`
-- [ ] Lowercase names.
+- [x] Strip punctuation variants.
+- [x] Normalize Unicode confusables.
+- [x] Normalize common substitutions:
+  - [x] `0` ↔ `o`
+  - [x] `1` ↔ `l` / `i`
+  - [x] `_` ↔ `-` / `.`
+- [x] Lowercase names.
 
 ### 13.3 Similarity scoring
 
-- [ ] Implement edit-distance comparison.
-- [ ] Implement Jaro-Winkler or equivalent.
-- [ ] Compare scoped and unscoped names separately.
-- [ ] Increase risk for new packages similar to high-popularity packages.
+- [x] Implement edit-distance comparison.
+- [x] Implement Jaro-Winkler or equivalent.
+- [x] Compare scoped and unscoped names separately.
+- [x] Increase risk for new packages similar to high-popularity packages.
 - [ ] Increase risk for author mismatch and no provenance.
-- [ ] Add high-confidence blocker threshold.
+- [x] Add high-confidence blocker threshold.
 
 ### 13.4 Publish-time name gate
 
@@ -749,7 +749,7 @@ Definition of done:
 
 Definition of done:
 
-- [ ] Fixture `is-0dd` is flagged as similar to `is-odd`.
+- [x] Fixture `is-0dd` is flagged as similar to `is-odd`.
 - [ ] High-confidence typosquat blocks public promotion and strict installs.
 
 ---

@@ -4,3 +4,6 @@ export * from './policy.js';
 export * from './osv.js';
 export * from './repo-health.js';
 export * from './provenance.js';
+export * from './name-corpus.js';
+export * from './name-normalize.js';
+export * from './name-risk.js';
