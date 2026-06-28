@@ -638,32 +638,32 @@ Definition of done:
 
 ### 11.1 Previous version selection
 
-- [ ] Implement function to find previous visible version in same package.
-- [ ] Prefer previous semver version lower than current.
-- [ ] Fallback to current `latest` before publish.
-- [ ] Ignore retracted/quarantined versions unless comparing for forensic admin mode.
+- [x] Implement function to find previous visible version in same package.
+- [x] Prefer previous semver version lower than current.
+- [x] Fallback to current `latest` before publish.
+- [x] Ignore retracted/quarantined versions unless comparing for forensic admin mode.
 
 ### 11.2 File diff
 
-- [ ] Unpack previous tarball.
-- [ ] Compute added/removed/modified files.
-- [ ] Compute total changed bytes.
-- [ ] Detect new/removed bin entries.
-- [ ] Detect new/removed lifecycle scripts.
-- [ ] Detect dependency changes.
-- [ ] Detect repository URL changes.
+- [x] Unpack previous tarball.
+- [x] Compute added/removed/modified files.
+- [x] Compute total changed bytes.
+- [x] Detect new/removed bin entries.
+- [x] Detect new/removed lifecycle scripts.
+- [x] Detect dependency changes.
+- [x] Detect repository URL changes.
 
 ### 11.3 Risk integration
 
-- [ ] Add score deductions for risky deltas:
-  - [ ] new install script
-  - [ ] new child process usage
+- [x] Add score deductions for risky deltas:
+  - [x] new install script
+  - [x] new child process usage
   - [ ] new network usage
-  - [ ] new native binary
-  - [ ] source repo changed
-  - [ ] maintainer/publisher changed
-- [ ] Add report section `diffRisk`.
-- [ ] Add tests with package fixture versions.
+  - [x] new native binary
+  - [x] source repo changed
+  - [x] maintainer/publisher changed
+- [x] Add report section `diffRisk`.
+- [x] Add tests with package fixture versions.
 
 Definition of done:
 

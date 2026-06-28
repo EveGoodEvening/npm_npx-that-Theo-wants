@@ -105,3 +105,6 @@ export * from './metadata.js';
 export * from './scripts.js';
 export * from './static.js';
 export * from './readability.js';
+export * from './diff-version.js';
+export * from './diff.js';
+export * from './diff-risk.js';

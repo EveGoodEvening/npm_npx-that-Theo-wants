@@ -161,10 +161,16 @@ importers:
       acorn-walk:
         specifier: ^8.3.4
         version: 8.3.5
+      semver:
+        specifier: ^7.8.5
+        version: 7.8.5
       tar:
         specifier: ^7.4.3
         version: 7.5.17
     devDependencies:
+      '@types/semver':
+        specifier: ^7.7.1
+        version: 7.7.1
       '@types/tar':
         specifier: ^6.1.13
         version: 6.1.13
