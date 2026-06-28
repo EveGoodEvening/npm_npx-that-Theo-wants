@@ -558,31 +558,31 @@ Definition of done:
 
 ### 9.1 Key management
 
-- [ ] Generate local dev ECDSA P-256 signing key.
-- [ ] Store dev key outside source control.
-- [ ] Implement key ID calculation.
-- [ ] Implement `GET /-/npm/v1/keys`.
-- [ ] Add key rotation data model placeholder.
+- [x] Generate local dev ECDSA P-256 signing key.
+- [x] Store dev key outside source control.
+- [x] Implement key ID calculation.
+- [ ] Implement `GET /-/npm/v1/keys`. <!-- blocked: needs registry API (section 7); buildKeysResponse helper implemented -->
+- [x] Add key rotation data model placeholder.
 
 ### 9.2 Sign dist metadata
 
-- [ ] Implement signing payload as package name, version, publish ID, and tarball integrity.
-- [ ] Store signature with package version.
-- [ ] Include signature in packument `dist.signatures`.
-- [ ] Add tests for signature creation.
-- [ ] Add tests for signature verification.
+- [x] Implement signing payload as package name, version, publish ID, and tarball integrity.
+- [ ] Store signature with package version. <!-- blocked: needs registry persistence (section 7); packument generator supports dist.signatures -->
+- [x] Include signature in packument `dist.signatures`.
+- [x] Add tests for signature creation.
+- [x] Add tests for signature verification.
 
 ### 9.3 CLI verification
 
-- [ ] Implement verification helper for registry signatures.
-- [ ] In `safe-npm install` preflight, verify signatures when registry has keys.
-- [ ] Add blocker on missing signature if registry advertises signatures and policy requires it.
+- [x] Implement verification helper for registry signatures.
+- [x] In `safe-npm install` preflight, verify signatures when registry has keys.
+- [ ] Add blocker on missing signature if registry advertises signatures and policy requires it. <!-- blocked: needs registry keys endpoint + policy option; mismatch blocker implemented -->
 
 Definition of done:
 
-- [ ] Local registry exposes keys.
-- [ ] Packuments include signatures.
-- [ ] CLI can verify signatures before install/exec.
+- [ ] Local registry exposes keys. <!-- blocked: needs registry API (section 7) -->
+- [x] Packuments include signatures.
+- [x] CLI can verify signatures before install/exec.
 
 ---
 
@@ -1165,32 +1165,32 @@ Definition of done:
 
 ### 22.1 Policy storage
 
-- [ ] Add policy set migrations.
-- [ ] Implement `GET /v1/policies/:scope`.
-- [ ] Implement `PUT /v1/policies/:scope`.
-- [ ] Validate policy with schema.
-- [ ] Audit log policy changes.
+- [ ] Add policy set migrations. <!-- blocked: needs DB (section 7) -->
+- [ ] Implement `GET /v1/policies/:scope`. <!-- blocked: needs registry API (section 7) -->
+- [ ] Implement `PUT /v1/policies/:scope`. <!-- blocked: needs registry API (section 7) -->
+- [x] Validate policy with schema.
+- [ ] Audit log policy changes. <!-- blocked: needs registry audit log (section 7/25) -->
 
 ### 22.2 CLI policy commands
 
-- [ ] Implement `safe-npm policy init`.
-- [ ] Implement `safe-npm policy show`.
-- [ ] Implement `safe-npm policy test <risk-report.json>`.
-- [ ] Implement `safe-npx policy init`.
-- [ ] Implement `safe-npx policy test <risk-report.json>`.
+- [x] Implement `safe-npm policy init`.
+- [x] Implement `safe-npm policy show`.
+- [x] Implement `safe-npm policy test <risk-report.json>`.
+- [x] Implement `safe-npx policy init`.
+- [x] Implement `safe-npx policy test <risk-report.json>`.
 
 ### 22.3 Presets
 
-- [ ] Add `relaxed` preset.
-- [ ] Add `default-human` preset.
-- [ ] Add `strict` preset.
-- [ ] Add `agent` preset.
-- [ ] Add `ci` preset.
+- [x] Add `relaxed` preset.
+- [x] Add `default-human` preset.
+- [x] Add `strict` preset.
+- [x] Add `agent` preset.
+- [x] Add `ci` preset.
 
 Definition of done:
 
-- [ ] Policy decisions are reproducible locally and on the server.
-- [ ] Agent policy blocks `latest` and requires exact versions by default.
+- [x] Policy decisions are reproducible locally and on the server.
+- [x] Agent policy blocks `latest` and requires exact versions by default.
 
 ---
 

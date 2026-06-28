@@ -1,10 +1,10 @@
-import { readFile } from 'node:fs/promises';
-import type { RiskReport, AnalysisReport, PolicyDecision, PolicySet } from '@safe-npm/core-types';
-import { SafeNpmError, toCliExitCode, PolicySetSchema } from '@safe-npm/core-types';
+import { readFile, writeFile } from 'node:fs/promises';
+import type { RiskReport, AnalysisReport, PolicyDecision, PolicySet, PolicyAction } from '@safe-npm/core-types';
+import { SafeNpmError, toCliExitCode, PolicySetSchema, RiskReportSchema } from '@safe-npm/core-types';
 import { runPreflight } from './preflight.js';
 import type { PreflightResult } from './preflight.js';
 import { installIntoCache, resolveInstalledBin, executeBin, createExecCache, execCacheKey, buildPermissionFlags, loadTrustCache, isTrusted, addTrustEntry } from './execution.js';
-import { renderTty, DEFAULT_HUMAN_POLICY, DEFAULT_AGENT_POLICY } from '@safe-npm/scoring';
+import { renderTty, DEFAULT_HUMAN_POLICY, DEFAULT_AGENT_POLICY, getPreset, evaluatePolicy } from '@safe-npm/scoring';
 import { scanAndPreflight, scanExitCode } from './scan-skill.js';
 export interface GlobalFlags {
   json: boolean;
@@ -315,6 +315,75 @@ export async function scanSkillCommand(filePath: string, flags: GlobalFlags): Pr
     return handleError(err, flags);
   }
 }
+
+/** `safe-npm policy init|show|test` and `safe-npx policy init|test` */
+export async function policyCommand(
+  sub: string,
+  args: string[],
+  flags: GlobalFlags,
+): Promise<number> {
+  try {
+    if (sub === 'init') {
+      const preset = (args[0] ?? (flags.agent ? 'agent' : 'default')) as PolicySet['mode'];
+      const validPresets: PolicySet['mode'][] = ['relaxed', 'default', 'strict', 'agent', 'ci'];
+      if (!validPresets.includes(preset)) {
+        getErr(flags)(`invalid preset '${preset}'; valid: ${validPresets.join(', ')}\n`);
+        return 1;
+      }
+      const policy = getPreset(preset);
+      const outPath = args[1] ?? './safe-npm-policy.json';
+      await writeFile(outPath, JSON.stringify(policy, null, 2) + '\n');
+      getOut(flags)(`wrote ${outPath} (${preset} preset)\n`);
+      return 0;
+    }
+    if (sub === 'show') {
+      const policy = await loadPolicy(flags);
+      if (flags.json) {
+        getOut(flags)(JSON.stringify(policy, null, 2) + '\n');
+      } else {
+        getOut(flags)(`Policy: ${policy.name} (mode ${policy.mode})\n`);
+        getOut(flags)(`  install.minimumScore: ${policy.install.minimumScore ?? '(none)'}\n`);
+        getOut(flags)(`  exec.minimumScore: ${policy.exec.minimumScore ?? '(none)'}\n`);
+        getOut(flags)(`  exec.disallowLatestTag: ${policy.exec.disallowLatestTag}\n`);
+        getOut(flags)(`  publish.defaultVisibility: ${policy.publish.defaultVisibility}\n`);
+      }
+      return 0;
+    }
+    if (sub === 'test') {
+      const reportPath = args[0];
+      if (!reportPath) {
+        getErr(flags)('usage: policy test <risk-report.json> [action]\n');
+        return 1;
+      }
+      const action = (args[1] ?? 'exec') as PolicyAction;
+      const rawReport = JSON.parse(await readFile(reportPath, 'utf8'));
+      const report = RiskReportSchema.parse(rawReport);
+      const policy = await loadPolicy(flags);
+      const decision = evaluatePolicy(policy, {
+        riskReport: report,
+        action,
+        isExactVersion: /^\d+\.\d+\.\d+/.test(report.version),
+      });
+      if (flags.json) {
+        getOut(flags)(JSON.stringify(decision, null, 2) + '\n');
+      } else {
+        getOut(flags)(`Decision: ${decision.decision} (allow=${decision.allow})\n`);
+        if (decision.reason) getOut(flags)(`Reason: ${decision.reason}\n`);
+        for (const r of decision.matchedRules) {
+          getOut(flags)(`  matched: ${r.path} expected=${JSON.stringify(r.expected)} actual=${JSON.stringify(r.actual)}\n`);
+        }
+      }
+      if (decision.decision === 'blocked') return 11;
+      if (decision.decision === 'requires_approval') return 10;
+      return 0;
+    }
+    getErr(flags)('usage: policy init [preset] [path] | policy show | policy test <risk-report.json> [action]\n');
+    return 1;
+  } catch (err) {
+    return handleError(err, flags);
+  }
+}
+
 function handleError(err: unknown, flags: GlobalFlags): number {
   const e = err instanceof SafeNpmError ? err : new SafeNpmError({
     code: 'INTERNAL_ERROR',

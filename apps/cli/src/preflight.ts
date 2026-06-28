@@ -12,7 +12,7 @@ import type {
 import { parsePackageSpec, fetchPackument, resolveVersion, downloadTarball } from '@safe-npm/npm-compat';
 import { analyzeTarball, resolveBin, ANALYZER_VERSION } from '@safe-npm/analyzer';
 import { scoreAnalysis, evaluatePolicy, DEFAULT_HUMAN_POLICY, DEFAULT_AGENT_POLICY } from '@safe-npm/scoring';
-
+import { verifyRegistrySignatures, type RegistryKey, type DistSignature } from '@safe-npm/auth';
 export interface PreflightInput {
   spec: string;
   registryUrl?: string;
@@ -34,6 +34,8 @@ export interface PreflightResult {
   decision: PolicyDecision;
   /** Whether the version is exact (not a range/tag). */
   isExactVersion: boolean;
+  /** Best-effort registry signature verification result. */
+  signatureVerification?: { verified: boolean; checked: boolean; reason?: string };
 }
 
 /**
@@ -105,7 +107,37 @@ export async function runPreflight(input: PreflightInput): Promise<PreflightResu
       selectedBin = undefined;
     }
 
-    // 8. Policy decision.
+    // 8. Best-effort registry signature verification.
+    let signatureVerification: { verified: boolean; checked: boolean; reason?: string } | undefined;
+    const sigs = versionData.dist?.signatures as DistSignature[] | undefined;
+    if (sigs && sigs.length > 0) {
+      try {
+        const keysUrl = `${registryUrl.replace(/\/$/, '')}/-/npm/v1/keys`;
+        const fetchImpl = input.fetchImpl ?? fetch;
+        const keysRes = await fetchImpl(keysUrl, { headers: { accept: 'application/json' } });
+        const keysData = (await keysRes.json()) as { keys?: RegistryKey[] } | null;
+        const keys = keysData?.keys;
+        signatureVerification = verifyRegistrySignatures(
+          { name: spec.name, version, publishId: '', tarballIntegrity: versionData.dist?.integrity ?? '' },
+          sigs,
+          keys,
+        );
+        if (signatureVerification.checked && !signatureVerification.verified) {
+          riskReport.blockers.push({
+            code: 'SIGNATURE_MISMATCH',
+            severity: 'critical',
+            message: `registry signature verification failed: ${signatureVerification.reason ?? 'mismatch'}`,
+            evidence: [],
+          });
+          riskReport.tier = 'blocked';
+        }
+      } catch {
+        // keys fetch failed; graceful degradation (not checked)
+        signatureVerification = { verified: false, checked: false, reason: 'keys endpoint unavailable' };
+      }
+    }
+
+    // 9. Policy decision.
     const decision = evaluatePolicy(policy, {
       riskReport,
       action: 'exec',
@@ -122,6 +154,7 @@ export async function runPreflight(input: PreflightInput): Promise<PreflightResu
       selectedBin,
       decision,
       isExactVersion,
+      signatureVerification,
     };
   } finally {
     // cleanup temp; note: in real use the quarantine cache persists.

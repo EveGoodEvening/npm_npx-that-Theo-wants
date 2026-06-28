@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { parseGlobalFlags, preflightCommand, execPreflightCommand, scanSkillCommand } from './commands.js';
+import { parseGlobalFlags, preflightCommand, execPreflightCommand, scanSkillCommand, policyCommand } from './commands.js';
 import { listTrustEntries, revokeTrustEntry, cleanExecCache, createExecCache } from './execution.js';
 import { createInterface } from 'node:readline/promises';
 import type { RiskReport, AnalysisReport } from '@safe-npm/core-types';
@@ -69,6 +69,12 @@ async function main(): Promise<void> {
     process.stderr.write('usage: safe-npx cache clean\n');
     process.exit(1);
   }
+  if (cmd === 'policy') {
+    const sub = rest[1] ?? '';
+    const code = await policyCommand(sub, rest.slice(2), flags);
+    process.exit(code);
+  }
+  // Default: treat first non-flag arg as a package spec to execute.
   if (cmd && !cmd.startsWith('-')) {
     const pkgSpec = cmd;
     const execArgs = rest.slice(1);

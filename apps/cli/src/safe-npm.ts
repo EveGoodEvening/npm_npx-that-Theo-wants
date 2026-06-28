@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import { parseGlobalFlags, viewCommand } from './commands.js';
-
+import { parseGlobalFlags, viewCommand, policyCommand } from './commands.js';
 const args = process.argv.slice(2);
 const { flags, rest } = parseGlobalFlags(args);
 
@@ -18,6 +17,11 @@ async function main(): Promise<void> {
       process.exit(1);
     }
     const code = await viewCommand(pkgSpec, flags);
+    process.exit(code);
+  }
+  if (cmd === 'policy') {
+    const sub = rest[1] ?? '';
+    const code = await policyCommand(sub, rest.slice(2), flags);
     process.exit(code);
   }
   // For unimplemented commands, print a structured error.

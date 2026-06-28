@@ -15,7 +15,8 @@
     "@safe-npm/core-types": "*",
     "@safe-npm/npm-compat": "*",
     "@safe-npm/analyzer": "*",
-    "@safe-npm/scoring": "*"
+    "@safe-npm/scoring": "*",
+    "@safe-npm/auth": "*"
   },
   "devDependencies": {
     "@types/tar": "^6.1.13",

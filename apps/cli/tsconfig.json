@@ -6,6 +6,7 @@
     { "path": "../../packages/core-types" },
     { "path": "../../packages/npm-compat" },
     { "path": "../../packages/analyzer" },
-    { "path": "../../packages/scoring" }
+    { "path": "../../packages/scoring" },
+    { "path": "../../packages/auth" }
   ]
 }
