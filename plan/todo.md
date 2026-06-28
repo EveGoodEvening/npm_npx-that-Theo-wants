@@ -189,113 +189,113 @@ Definition of done:
 
 ### 4.1 Quarantine cache
 
-- [ ] Create a local cache directory under OS-specific cache path.
-- [ ] Store tarballs by integrity digest.
-- [ ] Store unpacked contents by integrity digest.
-- [ ] Ensure unpack path is never inside the current project by default.
-- [ ] Add cache lock to prevent concurrent corruption.
-- [ ] Add cache cleanup command.
+- [x] Create a local cache directory under OS-specific cache path.
+- [x] Store tarballs by integrity digest.
+- [x] Store unpacked contents by integrity digest.
+- [x] Ensure unpack path is never inside the current project by default.
+- [x] Add cache lock to prevent concurrent corruption.
+- [x] Add cache cleanup command.
 
 ### 4.2 Safe tar extraction
 
-- [ ] Implement tar extraction that rejects absolute paths.
-- [ ] Reject `..` path traversal.
-- [ ] Reject symlink traversal unless explicitly allowed for analysis metadata only.
-- [ ] Reject hardlink traversal.
-- [ ] Add fixture tests with malicious tar paths.
+- [x] Implement tar extraction that rejects absolute paths.
+- [x] Reject `..` path traversal.
+- [x] Reject symlink traversal unless explicitly allowed for analysis metadata only.
+- [x] Reject hardlink traversal.
+- [x] Add fixture tests with malicious tar paths.
 
 ### 4.3 Metadata analyzer
 
-- [ ] Extract `package.json`.
-- [ ] Validate name/version against resolved package.
-- [ ] Extract fields:
-  - [ ] name
-  - [ ] version
-  - [ ] description
-  - [ ] license
-  - [ ] author
-  - [ ] contributors
-  - [ ] maintainers from packument
-  - [ ] repository
-  - [ ] homepage
-  - [ ] bugs
-  - [ ] main
-  - [ ] exports
-  - [ ] bin
-  - [ ] scripts
-  - [ ] dependencies
-  - [ ] devDependencies
-  - [ ] optionalDependencies
-  - [ ] peerDependencies
-  - [ ] bundledDependencies
-- [ ] Count files.
-- [ ] Compute packed size.
-- [ ] Compute unpacked size.
-- [ ] Detect common binary file types.
-- [ ] Detect `.node` native addons.
-- [ ] Detect `binding.gyp`.
+- [x] Extract `package.json`.
+- [x] Validate name/version against resolved package.
+- [x] Extract fields:
+  - [x] name
+  - [x] version
+  - [x] description
+  - [x] license
+  - [x] author
+  - [x] contributors
+  - [x] maintainers from packument
+  - [x] repository
+  - [x] homepage
+  - [x] bugs
+  - [x] main
+  - [x] exports
+  - [x] bin
+  - [x] scripts
+  - [x] dependencies
+  - [x] devDependencies
+  - [x] optionalDependencies
+  - [x] peerDependencies
+  - [x] bundledDependencies
+- [x] Count files.
+- [x] Compute packed size.
+- [x] Compute unpacked size.
+- [x] Detect common binary file types.
+- [x] Detect `.node` native addons.
+- [x] Detect `binding.gyp`.
 
 ### 4.4 Script analyzer
 
-- [ ] Detect lifecycle scripts:
-  - [ ] `preinstall`
-  - [ ] `install`
-  - [ ] `postinstall`
-  - [ ] `prepare`
-  - [ ] `prepublish`
-  - [ ] `prepublishOnly`
-- [ ] Flag shell metacharacters.
-- [ ] Flag network tools in scripts:
-  - [ ] `curl`
-  - [ ] `wget`
-  - [ ] `nc`
-  - [ ] `ssh`
-  - [ ] `scp`
-- [ ] Flag package manager commands inside install scripts.
-- [ ] Flag `node-gyp` implicit native build when `binding.gyp` is present.
-- [ ] Add tests for package fixtures with and without scripts.
+- [x] Detect lifecycle scripts:
+  - [x] `preinstall`
+  - [x] `install`
+  - [x] `postinstall`
+  - [x] `prepare`
+  - [x] `prepublish`
+  - [x] `prepublishOnly`
+- [x] Flag shell metacharacters.
+- [x] Flag network tools in scripts:
+  - [x] `curl`
+  - [x] `wget`
+  - [x] `nc`
+  - [x] `ssh`
+  - [x] `scp`
+- [x] Flag package manager commands inside install scripts.
+- [x] Flag `node-gyp` implicit native build when `binding.gyp` is present.
+- [x] Add tests for package fixtures with and without scripts.
 
 ### 4.5 Static JS analyzer MVP
 
-- [ ] Parse `.js`, `.mjs`, `.cjs`, `.ts`, and `.tsx` files where feasible.
-- [ ] Do not fail entire analysis when one file cannot parse; emit finding with confidence.
-- [ ] Detect imports/requires of:
-  - [ ] `fs` / `node:fs`
-  - [ ] `child_process` / `node:child_process`
-  - [ ] `http` / `node:http`
-  - [ ] `https` / `node:https`
-  - [ ] `net` / `node:net`
-  - [ ] `dns` / `node:dns`
-  - [ ] `dgram` / `node:dgram`
-  - [ ] `os` / `node:os`
-  - [ ] `crypto` / `node:crypto`
-- [ ] Detect `process.env` access.
-- [ ] Detect common secret names.
-- [ ] Detect `eval`.
-- [ ] Detect `new Function`.
-- [ ] Detect dynamic import with nonliteral argument.
-- [ ] Detect base64 decode followed by eval/function/spawn where obvious.
-- [ ] Add file/line evidence where possible.
+- [x] Parse `.js`, `.mjs`, `.cjs`, `.ts`, and `.tsx` files where feasible.
+- [x] Do not fail entire analysis when one file cannot parse; emit finding with confidence.
+- [x] Detect imports/requires of:
+  - [x] `fs` / `node:fs`
+  - [x] `child_process` / `node:child_process`
+  - [x] `http` / `node:http`
+  - [x] `https` / `node:https`
+  - [x] `net` / `node:net`
+  - [x] `dns` / `node:dns`
+  - [x] `dgram` / `node:dgram`
+  - [x] `os` / `node:os`
+  - [x] `crypto` / `node:crypto`
+- [x] Detect `process.env` access.
+- [x] Detect common secret names.
+- [x] Detect `eval`.
+- [x] Detect `new Function`.
+- [x] Detect dynamic import with nonliteral argument.
+- [x] Detect base64 decode followed by eval/function/spawn where obvious.
+- [x] Add file/line evidence where possible.
 
 ### 4.6 Obfuscation/readability MVP
 
-- [ ] Compute minified-line ratio.
-- [ ] Compute average identifier length where AST parse succeeds.
-- [ ] Compute string entropy for long strings.
-- [ ] Flag giant string arrays.
-- [ ] Flag source map availability.
-- [ ] Produce `readability` facts:
-  - [ ] `likelyMinified`
-  - [ ] `likelyObfuscated`
-  - [ ] `sourceMapsPresent`
-  - [ ] `humanReadableFileRatio`
-- [ ] Add tests for minified, obfuscated-like, and normal fixtures.
+- [x] Compute minified-line ratio.
+- [x] Compute average identifier length where AST parse succeeds.
+- [x] Compute string entropy for long strings.
+- [x] Flag giant string arrays.
+- [x] Flag source map availability.
+- [x] Produce `readability` facts:
+  - [x] `likelyMinified`
+  - [x] `likelyObfuscated`
+  - [x] `sourceMapsPresent`
+  - [x] `humanReadableFileRatio`
+- [x] Add tests for minified, obfuscated-like, and normal fixtures.
 
 Definition of done:
 
-- [ ] Analyzer returns a stable `AnalysisReport` for a tarball digest.
-- [ ] Analyzer never executes package code.
-- [ ] Analyzer emits evidence paths for high-severity findings.
+- [x] Analyzer returns a stable `AnalysisReport` for a tarball digest.
+- [x] Analyzer never executes package code.
+- [x] Analyzer emits evidence paths for high-severity findings.
 
 ---
 

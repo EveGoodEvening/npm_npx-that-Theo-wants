@@ -16,7 +16,14 @@
     "typecheck": "tsc -b",
     "test": "vitest run --passWithNoTests"
   },
+  "dependencies": {
+    "@safe-npm/core-types": "workspace:*",
+    "acorn": "^8.14.0",
+    "acorn-walk": "^8.3.4",
+    "tar": "^7.4.3"
+  },
   "devDependencies": {
+    "@types/tar": "^6.1.13",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
   }

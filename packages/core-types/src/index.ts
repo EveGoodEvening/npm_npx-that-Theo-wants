@@ -1,4 +1,5 @@
 export * from './package.js';
+export * from './analysis.js';
 export * from './risk.js';
 export * from './permissions.js';
 export * from './policy.js';
